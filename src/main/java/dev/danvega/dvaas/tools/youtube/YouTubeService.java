@@ -6,12 +6,12 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.*;
+import dev.danvega.dvaas.config.YouTubeProperties;
 import dev.danvega.dvaas.tools.youtube.model.ChannelStats;
 import dev.danvega.dvaas.tools.youtube.model.SearchResult;
 import dev.danvega.dvaas.tools.youtube.model.VideoInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
@@ -30,26 +30,20 @@ import java.util.List;
 public class YouTubeService {
 
     private static final Logger logger = LoggerFactory.getLogger(YouTubeService.class);
-    private static final String APPLICATION_NAME = "dvaas-youtube-mcp";
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
 
     private final YouTube youtube;
-    private final String apiKey;
-    private final String channelId;
+    private final YouTubeProperties youTubeProperties;
 
-    public YouTubeService(
-            @Value("${dvaas.youtube.api-key}") String apiKey,
-            @Value("${dvaas.youtube.channel-id}") String channelId) throws GeneralSecurityException, IOException {
-
-        this.apiKey = apiKey;
-        this.channelId = channelId;
+    public YouTubeService(YouTubeProperties youTubeProperties) throws GeneralSecurityException, IOException {
+        this.youTubeProperties = youTubeProperties;
 
         final NetHttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
         this.youtube = new YouTube.Builder(httpTransport, JSON_FACTORY, null)
-                .setApplicationName(APPLICATION_NAME)
+                .setApplicationName(youTubeProperties.applicationName())
                 .build();
 
-        logger.info("YouTube service initialized for channel: {}", channelId);
+        logger.info("YouTube service initialized for channel: {}", youTubeProperties.channelId());
     }
 
     /**
@@ -59,13 +53,13 @@ public class YouTubeService {
         try {
             YouTube.Channels.List request = youtube.channels()
                     .list(List.of("statistics", "snippet"))
-                    .setId(List.of(channelId))
-                    .setKey(apiKey);
+                    .setId(List.of(youTubeProperties.channelId()))
+                    .setKey(youTubeProperties.apiKey());
 
             ChannelListResponse response = request.execute();
 
             if (response.getItems() == null || response.getItems().isEmpty()) {
-                throw new RuntimeException("Channel not found: " + channelId);
+                throw new RuntimeException("Channel not found: " + youTubeProperties.channelId());
             }
 
             Channel channel = response.getItems().get(0);
@@ -101,7 +95,7 @@ public class YouTubeService {
                     .list(List.of("snippet", "contentDetails"))
                     .setPlaylistId(uploadsPlaylistId)
                     .setMaxResults((long) Math.min(maxResults, 50))
-                    .setKey(apiKey);
+                    .setKey(youTubeProperties.apiKey());
 
             PlaylistItemListResponse response = request.execute();
 
@@ -141,11 +135,11 @@ public class YouTubeService {
             YouTube.Search.List search = youtube.search()
                     .list(List.of("snippet"))
                     .setQ(topic)
-                    .setChannelId(channelId)
+                    .setChannelId(youTubeProperties.channelId())
                     .setType(List.of("video"))
                     .setOrder("relevance")
                     .setMaxResults((long) Math.min(maxResults, 50))
-                    .setKey(apiKey);
+                    .setKey(youTubeProperties.apiKey());
 
             SearchListResponse searchResponse = search.execute();
 
@@ -166,13 +160,13 @@ public class YouTubeService {
     private String getUploadsPlaylistId() throws IOException {
         YouTube.Channels.List request = youtube.channels()
                 .list(List.of("contentDetails"))
-                .setId(List.of(channelId))
-                .setKey(apiKey);
+                .setId(List.of(youTubeProperties.channelId()))
+                .setKey(youTubeProperties.apiKey());
 
         ChannelListResponse response = request.execute();
 
         if (response.getItems() == null || response.getItems().isEmpty()) {
-            throw new RuntimeException("Channel not found: " + channelId);
+            throw new RuntimeException("Channel not found: " + youTubeProperties.channelId());
         }
 
         return response.getItems().get(0).getContentDetails().getRelatedPlaylists().getUploads();
@@ -228,7 +222,7 @@ public class YouTubeService {
         YouTube.Videos.List request = youtube.videos()
                 .list(List.of("statistics", "contentDetails"))
                 .setId(videoIds)
-                .setKey(apiKey);
+                .setKey(youTubeProperties.apiKey());
 
         VideoListResponse response = request.execute();
 
