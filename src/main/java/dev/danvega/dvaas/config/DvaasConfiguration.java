@@ -10,7 +10,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @EnableConfigurationProperties({
     BlogProperties.class,
-    YouTubeProperties.class
+    YouTubeProperties.class,
+    SpeakingProperties.class
 })
 public class DvaasConfiguration {
 }
