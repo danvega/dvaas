@@ -54,17 +54,10 @@ class BlogIntegrationTest {
         BlogTools tools = applicationContext.getBean("blogTools", BlogTools.class);
         assertNotNull(tools);
 
-        // Verify the tools can be invoked (they should handle empty results gracefully)
-        String latestResult = tools.getLatestPosts("1");
-        assertNotNull(latestResult);
-
-        String statsResult = tools.getBlogStats();
-        assertNotNull(statsResult);
-
-        String searchResult = tools.searchPostsByKeyword("spring", "1");
-        assertNotNull(searchResult);
-
-        String dateRangeResult = tools.getPostsByDateRange("2024", "1");
-        assertNotNull(dateRangeResult);
+        // Verify the tools can be invoked (they should return collections/objects)
+        assertNotNull(tools.getLatestPosts("1"));
+        assertNotNull(tools.getBlogStats());
+        assertNotNull(tools.searchPostsByKeyword("spring", "1"));
+        assertNotNull(tools.getPostsByDateRange("2024", "1"));
     }
 }

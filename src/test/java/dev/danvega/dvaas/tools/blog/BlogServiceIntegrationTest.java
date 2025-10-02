@@ -2,7 +2,6 @@ package dev.danvega.dvaas.tools.blog;
 
 import dev.danvega.dvaas.config.BlogProperties;
 import dev.danvega.dvaas.tools.blog.model.BlogPost;
-import dev.danvega.dvaas.tools.blog.model.BlogSearchResult;
 import dev.danvega.dvaas.tools.blog.model.BlogStats;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
@@ -73,24 +72,22 @@ class BlogServiceIntegrationTest {
 
     @Test
     void searchPostsByKeyword_ShouldFindSpringPosts() {
-        BlogSearchResult result = blogService.searchPostsByKeyword("spring", 10);
+        List<BlogPost> posts = blogService.searchPostsByKeyword("spring", 10);
 
-        assertNotNull(result);
-        assertEquals("spring", result.searchKeyword());
-        assertEquals("keyword", result.searchType());
+        assertNotNull(posts);
 
-        if (result.hasResults()) {
-            assertTrue(result.totalMatches() > 0);
+        if (!posts.isEmpty()) {
+            assertTrue(posts.size() > 0);
 
             // Verify that found posts actually contain the keyword
-            for (BlogPost post : result.posts()) {
+            for (BlogPost post : posts) {
                 String title = post.title().toLowerCase();
                 String description = post.description() != null ? post.description().toLowerCase() : "";
                 assertTrue(title.contains("spring") || description.contains("spring"),
                     "Post should contain 'spring' in title or description: " + post.title());
             }
 
-            System.out.println("Found " + result.totalMatches() + " posts matching 'spring'");
+            System.out.println("Found " + posts.size() + " posts matching 'spring'");
         } else {
             System.out.println("No posts found for 'spring' keyword");
         }
@@ -98,31 +95,27 @@ class BlogServiceIntegrationTest {
 
     @Test
     void searchPostsByKeyword_WithUncommonKeyword_ShouldHandleNoResults() {
-        BlogSearchResult result = blogService.searchPostsByKeyword("xyzuncommonkeyword123", 10);
+        List<BlogPost> posts = blogService.searchPostsByKeyword("xyzuncommonkeyword123", 10);
 
-        assertNotNull(result);
-        assertEquals("xyzuncommonkeyword123", result.searchKeyword());
-        assertFalse(result.hasResults());
-        assertEquals(0, result.totalMatches());
+        assertNotNull(posts);
+        assertTrue(posts.isEmpty());
     }
 
     @Test
     void getPostsByYear_ShouldReturnPostsFromSpecificYear() {
         int currentYear = LocalDateTime.now().getYear();
-        BlogSearchResult result = blogService.getPostsByYear(currentYear, 20);
+        List<BlogPost> posts = blogService.getPostsByYear(currentYear, 20);
 
-        assertNotNull(result);
-        assertEquals(String.valueOf(currentYear), result.dateRangeDescription());
-        assertEquals("date_range", result.searchType());
+        assertNotNull(posts);
 
-        if (result.hasResults()) {
+        if (!posts.isEmpty()) {
             // Verify all posts are from the specified year
-            for (BlogPost post : result.posts()) {
+            for (BlogPost post : posts) {
                 assertEquals(currentYear, post.publishedAt().getYear(),
                     "Post should be from " + currentYear + ": " + post.title());
             }
 
-            System.out.println("Found " + result.totalMatches() + " posts from " + currentYear);
+            System.out.println("Found " + posts.size() + " posts from " + currentYear);
         } else {
             System.out.println("No posts found for year " + currentYear);
         }

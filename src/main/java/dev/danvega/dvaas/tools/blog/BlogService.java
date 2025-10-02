@@ -6,7 +6,6 @@ import com.rometools.rome.io.SyndFeedInput;
 import com.rometools.rome.io.XmlReader;
 import dev.danvega.dvaas.config.BlogProperties;
 import dev.danvega.dvaas.tools.blog.model.BlogPost;
-import dev.danvega.dvaas.tools.blog.model.BlogSearchResult;
 import dev.danvega.dvaas.tools.blog.model.BlogStats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,50 +60,42 @@ public class BlogService {
     /**
      * Search blog posts by keyword in title and description
      */
-    public BlogSearchResult searchPostsByKeyword(String keyword, int maxResults) {
+    public List<BlogPost> searchPostsByKeyword(String keyword, int maxResults) {
         if (keyword == null || keyword.trim().isEmpty()) {
-            return BlogSearchResult.forKeyword(List.of(), keyword);
+            return List.of();
         }
 
         String searchTerm = keyword.toLowerCase().trim();
         List<BlogPost> allPosts = getCachedPosts();
 
-        List<BlogPost> matchingPosts = allPosts.stream()
+        return allPosts.stream()
                 .filter(post -> matchesKeyword(post, searchTerm))
                 .sorted((p1, p2) -> p2.publishedAt().compareTo(p1.publishedAt()))
                 .limit(Math.min(maxResults, 50))
                 .toList();
-
-        return BlogSearchResult.forKeyword(matchingPosts, keyword);
     }
 
     /**
      * Get blog posts within a specific date range
      */
-    public BlogSearchResult getPostsByDateRange(LocalDateTime startDate, LocalDateTime endDate, int maxResults) {
+    public List<BlogPost> getPostsByDateRange(LocalDateTime startDate, LocalDateTime endDate, int maxResults) {
         List<BlogPost> allPosts = getCachedPosts();
 
-        String dateRangeDesc = String.format("%s to %s",
-            startDate.toLocalDate(), endDate.toLocalDate());
-
-        List<BlogPost> matchingPosts = allPosts.stream()
+        return allPosts.stream()
                 .filter(post -> isWithinDateRange(post.publishedAt(), startDate, endDate))
                 .sorted((p1, p2) -> p2.publishedAt().compareTo(p1.publishedAt()))
                 .limit(Math.min(maxResults, 50))
                 .toList();
-
-        return BlogSearchResult.forDateRange(matchingPosts, dateRangeDesc);
     }
 
     /**
      * Get blog posts from a specific year
      */
-    public BlogSearchResult getPostsByYear(int year, int maxResults) {
+    public List<BlogPost> getPostsByYear(int year, int maxResults) {
         LocalDateTime startOfYear = LocalDateTime.of(year, 1, 1, 0, 0);
         LocalDateTime endOfYear = LocalDateTime.of(year, 12, 31, 23, 59);
 
-        BlogSearchResult result = getPostsByDateRange(startOfYear, endOfYear, maxResults);
-        return BlogSearchResult.forDateRange(result.posts(), String.valueOf(year));
+        return getPostsByDateRange(startOfYear, endOfYear, maxResults);
     }
 
     /**
