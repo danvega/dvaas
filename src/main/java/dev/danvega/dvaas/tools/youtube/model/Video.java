@@ -3,9 +3,9 @@ package dev.danvega.dvaas.tools.youtube.model;
 import java.time.LocalDateTime;
 
 /**
- * Represents YouTube video information for MCP tool responses
+ * Represents a YouTube video for MCP tool responses
  */
-public record VideoInfo(
+public record Video(
         String id,
         String title,
         String url,
@@ -19,10 +19,10 @@ public record VideoInfo(
 ) {
 
     /**
-     * Create a simplified VideoInfo for basic responses
+     * Create a simplified Video for basic responses
      */
-    public static VideoInfo basic(String id, String title, String url, LocalDateTime publishedAt, long viewCount) {
-        return new VideoInfo(id, title, url, null, publishedAt, viewCount, 0, 0, null, null);
+    public static Video basic(String id, String title, String url, LocalDateTime publishedAt, long viewCount) {
+        return new Video(id, title, url, null, publishedAt, viewCount, 0, 0, null, null);
     }
 
     /**

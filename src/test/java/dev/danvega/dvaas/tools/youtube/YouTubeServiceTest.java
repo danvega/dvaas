@@ -1,8 +1,7 @@
 package dev.danvega.dvaas.tools.youtube;
 
 import dev.danvega.dvaas.tools.youtube.model.ChannelStats;
-import dev.danvega.dvaas.tools.youtube.model.SearchResult;
-import dev.danvega.dvaas.tools.youtube.model.VideoInfo;
+import dev.danvega.dvaas.tools.youtube.model.Video;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -58,11 +57,11 @@ class YouTubeServiceTest {
     @Test
     void testGetLatestVideos() {
         // Given - mock video list
-        List<VideoInfo> mockVideos = List.of(
-            VideoInfo.basic("video1", "Spring Boot 3 Tutorial",
+        List<Video> mockVideos = List.of(
+            Video.basic("video1", "Spring Boot 3 Tutorial",
                           "https://youtube.com/watch?v=video1",
                           LocalDateTime.now().minusDays(1), 1500L),
-            VideoInfo.basic("video2", "Java 21 New Features",
+            Video.basic("video2", "Java 21 New Features",
                           "https://youtube.com/watch?v=video2",
                           LocalDateTime.now().minusDays(3), 2300L)
         );
@@ -70,7 +69,7 @@ class YouTubeServiceTest {
         when(youTubeService.getLatestVideos(5)).thenReturn(mockVideos);
 
         // When
-        List<VideoInfo> result = youTubeService.getLatestVideos(5);
+        List<Video> result = youTubeService.getLatestVideos(5);
 
         // Then
         assertNotNull(result);
@@ -83,11 +82,11 @@ class YouTubeServiceTest {
     @Test
     void testGetTopVideos() {
         // Given - mock top videos (sorted by view count)
-        List<VideoInfo> mockTopVideos = List.of(
-            VideoInfo.basic("top1", "Most Popular Spring Tutorial",
+        List<Video> mockTopVideos = List.of(
+            Video.basic("top1", "Most Popular Spring Tutorial",
                           "https://youtube.com/watch?v=top1",
                           LocalDateTime.now().minusMonths(2), 50000L),
-            VideoInfo.basic("top2", "Java Best Practices",
+            Video.basic("top2", "Java Best Practices",
                           "https://youtube.com/watch?v=top2",
                           LocalDateTime.now().minusMonths(1), 30000L)
         );
@@ -95,7 +94,7 @@ class YouTubeServiceTest {
         when(youTubeService.getTopVideos(5, "recent")).thenReturn(mockTopVideos);
 
         // When
-        List<VideoInfo> result = youTubeService.getTopVideos(5, "recent");
+        List<Video> result = youTubeService.getTopVideos(5, "recent");
 
         // Then
         assertNotNull(result);
@@ -109,29 +108,25 @@ class YouTubeServiceTest {
     @Test
     void testSearchVideosByTopic() {
         // Given - mock search results
-        List<VideoInfo> mockVideos = List.of(
-            VideoInfo.basic("spring1", "Spring Security Tutorial",
+        List<Video> mockVideos = List.of(
+            Video.basic("spring1", "Spring Security Tutorial",
                           "https://youtube.com/watch?v=spring1",
                           LocalDateTime.now().minusWeeks(1), 5000L),
-            VideoInfo.basic("spring2", "Spring Data JPA Guide",
+            Video.basic("spring2", "Spring Data JPA Guide",
                           "https://youtube.com/watch?v=spring2",
                           LocalDateTime.now().minusWeeks(2), 3500L)
         );
 
-        SearchResult mockSearchResult = new SearchResult(mockVideos, "spring", 2, null);
-
-        when(youTubeService.searchVideosByTopic("spring", 10)).thenReturn(mockSearchResult);
+        when(youTubeService.searchVideosByTopic("spring", 10)).thenReturn(mockVideos);
 
         // When
-        SearchResult result = youTubeService.searchVideosByTopic("spring", 10);
+        List<Video> result = youTubeService.searchVideosByTopic("spring", 10);
 
         // Then
         assertNotNull(result);
-        assertEquals("spring", result.query());
-        assertEquals(2, result.totalResults());
-        assertEquals(2, result.videos().size());
+        assertEquals(2, result.size());
 
-        VideoInfo firstVideo = result.videos().get(0);
+        Video firstVideo = result.get(0);
         assertEquals("Spring Security Tutorial", firstVideo.title());
         assertTrue(firstVideo.title().toLowerCase().contains("spring"));
     }
@@ -142,7 +137,7 @@ class YouTubeServiceTest {
         when(youTubeService.getLatestVideos(10)).thenReturn(List.of());
 
         // When
-        List<VideoInfo> result = youTubeService.getLatestVideos(10);
+        List<Video> result = youTubeService.getLatestVideos(10);
 
         // Then
         assertNotNull(result);
@@ -152,18 +147,14 @@ class YouTubeServiceTest {
     @Test
     void testSearchVideosNoResults() {
         // Given - no search results
-        SearchResult emptyResult = new SearchResult(List.of(), "nonexistent", 0, null);
-        when(youTubeService.searchVideosByTopic("nonexistent", 10)).thenReturn(emptyResult);
+        when(youTubeService.searchVideosByTopic("nonexistent", 10)).thenReturn(List.of());
 
         // When
-        SearchResult result = youTubeService.searchVideosByTopic("nonexistent", 10);
+        List<Video> result = youTubeService.searchVideosByTopic("nonexistent", 10);
 
         // Then
         assertNotNull(result);
-        assertEquals("nonexistent", result.query());
-        assertEquals(0, result.totalResults());
-        assertTrue(result.videos().isEmpty());
-        assertEquals("No videos found for query: nonexistent", result.getSummary());
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -176,9 +167,9 @@ class YouTubeServiceTest {
     }
 
     @Test
-    void testVideoInfoFormatting() {
+    void testVideoFormatting() {
         // Given - video with high view count
-        VideoInfo video = VideoInfo.basic("test", "Test Video",
+        Video video = Video.basic("test", "Test Video",
                                         "https://youtube.com/watch?v=test",
                                         LocalDateTime.now(), 1500000L);
 

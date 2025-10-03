@@ -8,8 +8,7 @@ import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.*;
 import dev.danvega.dvaas.config.YouTubeProperties;
 import dev.danvega.dvaas.tools.youtube.model.ChannelStats;
-import dev.danvega.dvaas.tools.youtube.model.SearchResult;
-import dev.danvega.dvaas.tools.youtube.model.VideoInfo;
+import dev.danvega.dvaas.tools.youtube.model.Video;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -85,7 +84,7 @@ public class YouTubeService {
     /**
      * Get latest videos from the channel
      */
-    public List<VideoInfo> getLatestVideos(int maxResults) {
+    public List<Video> getLatestVideos(int maxResults) {
         try {
             // First get the uploads playlist ID
             String uploadsPlaylistId = getUploadsPlaylistId();
@@ -109,13 +108,13 @@ public class YouTubeService {
     /**
      * Get top performing videos by view count
      */
-    public List<VideoInfo> getTopVideos(int maxResults, String timeRange) {
+    public List<Video> getTopVideos(int maxResults, String timeRange) {
         try {
             // Get recent videos first, then sort by view count
-            List<VideoInfo> recentVideos = getLatestVideos(50); // Get more to have a good pool
+            List<Video> recentVideos = getLatestVideos(50); // Get more to have a good pool
 
             // Get detailed statistics for sorting
-            List<VideoInfo> videosWithStats = getVideoStatistics(recentVideos);
+            List<Video> videosWithStats = getVideoStatistics(recentVideos);
 
             return videosWithStats.stream()
                     .sorted((v1, v2) -> Long.compare(v2.viewCount(), v1.viewCount()))
@@ -130,7 +129,7 @@ public class YouTubeService {
     /**
      * Search videos in the channel by topic/keyword
      */
-    public SearchResult searchVideosByTopic(String topic, int maxResults) {
+    public List<Video> searchVideosByTopic(String topic, int maxResults) {
         try {
             YouTube.Search.List search = youtube.search()
                     .list(List.of("snippet"))
@@ -143,14 +142,7 @@ public class YouTubeService {
 
             SearchListResponse searchResponse = search.execute();
 
-            List<VideoInfo> videos = convertSearchResultsToVideoInfo(searchResponse.getItems());
-
-            return new SearchResult(
-                    videos,
-                    topic,
-                    searchResponse.getPageInfo().getTotalResults(),
-                    searchResponse.getNextPageToken()
-            );
+            return convertSearchResultsToVideoInfo(searchResponse.getItems());
         } catch (IOException e) {
             logger.error("Error searching videos for topic: {}", topic, e);
             throw new RuntimeException("Failed to search videos for topic: " + topic, e);
@@ -172,7 +164,7 @@ public class YouTubeService {
         return response.getItems().get(0).getContentDetails().getRelatedPlaylists().getUploads();
     }
 
-    private List<VideoInfo> convertPlaylistItemsToVideoInfo(List<PlaylistItem> items) {
+    private List<Video> convertPlaylistItemsToVideoInfo(List<PlaylistItem> items) {
         if (items == null) return new ArrayList<>();
 
         return items.stream()
@@ -180,11 +172,11 @@ public class YouTubeService {
                 .toList();
     }
 
-    private VideoInfo convertPlaylistItemToVideoInfo(PlaylistItem item) {
+    private Video convertPlaylistItemToVideoInfo(PlaylistItem item) {
         PlaylistItemSnippet snippet = item.getSnippet();
         String videoId = snippet.getResourceId().getVideoId();
 
-        return VideoInfo.basic(
+        return Video.basic(
                 videoId,
                 snippet.getTitle(),
                 "https://www.youtube.com/watch?v=" + videoId,
@@ -193,7 +185,7 @@ public class YouTubeService {
         );
     }
 
-    private List<VideoInfo> convertSearchResultsToVideoInfo(List<com.google.api.services.youtube.model.SearchResult> items) {
+    private List<Video> convertSearchResultsToVideoInfo(List<com.google.api.services.youtube.model.SearchResult> items) {
         if (items == null) return new ArrayList<>();
 
         return items.stream()
@@ -201,11 +193,11 @@ public class YouTubeService {
                 .toList();
     }
 
-    private VideoInfo convertSearchResultToVideoInfo(com.google.api.services.youtube.model.SearchResult item) {
+    private Video convertSearchResultToVideoInfo(com.google.api.services.youtube.model.SearchResult item) {
         SearchResultSnippet snippet = item.getSnippet();
         String videoId = item.getId().getVideoId();
 
-        return VideoInfo.basic(
+        return Video.basic(
                 videoId,
                 snippet.getTitle(),
                 "https://www.youtube.com/watch?v=" + videoId,
@@ -214,10 +206,10 @@ public class YouTubeService {
         );
     }
 
-    private List<VideoInfo> getVideoStatistics(List<VideoInfo> videos) throws IOException {
+    private List<Video> getVideoStatistics(List<Video> videos) throws IOException {
         if (videos.isEmpty()) return videos;
 
-        List<String> videoIds = videos.stream().map(VideoInfo::id).toList();
+        List<String> videoIds = videos.stream().map(Video::id).toList();
 
         YouTube.Videos.List request = youtube.videos()
                 .list(List.of("statistics", "contentDetails"))
@@ -228,14 +220,14 @@ public class YouTubeService {
 
         return videos.stream()
                 .map(video -> {
-                    Video youtubeVideo = response.getItems().stream()
+                    com.google.api.services.youtube.model.Video youtubeVideo = response.getItems().stream()
                             .filter(v -> v.getId().equals(video.id()))
                             .findFirst()
                             .orElse(null);
 
                     if (youtubeVideo != null && youtubeVideo.getStatistics() != null) {
                         VideoStatistics stats = youtubeVideo.getStatistics();
-                        return new VideoInfo(
+                        return new Video(
                                 video.id(),
                                 video.title(),
                                 video.url(),

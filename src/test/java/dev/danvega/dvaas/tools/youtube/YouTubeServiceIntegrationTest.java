@@ -1,8 +1,7 @@
 package dev.danvega.dvaas.tools.youtube;
 
 import dev.danvega.dvaas.tools.youtube.model.ChannelStats;
-import dev.danvega.dvaas.tools.youtube.model.SearchResult;
-import dev.danvega.dvaas.tools.youtube.model.VideoInfo;
+import dev.danvega.dvaas.tools.youtube.model.Video;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -55,7 +54,7 @@ class YouTubeServiceIntegrationTest {
     @Test
     void testGetLatestVideos() {
         // Test getting latest videos from the channel
-        List<VideoInfo> videos = youTubeService.getLatestVideos(3);
+        List<Video> videos = youTubeService.getLatestVideos(3);
 
         // Verify we got real videos back
         assertNotNull(videos, "Videos list should not be null");
@@ -63,7 +62,7 @@ class YouTubeServiceIntegrationTest {
         assertTrue(videos.size() <= 3, "Should not exceed requested count");
 
         // Verify video data structure
-        VideoInfo firstVideo = videos.get(0);
+        Video firstVideo = videos.get(0);
         assertNotNull(firstVideo.id(), "Video ID should not be null");
         assertNotNull(firstVideo.title(), "Video title should not be null");
         assertTrue(firstVideo.title().length() > 0, "Video title should not be empty");
@@ -82,24 +81,22 @@ class YouTubeServiceIntegrationTest {
     @Test
     void testSearchVideosByTopic() {
         // Test searching for videos about "spring"
-        SearchResult result = youTubeService.searchVideosByTopic("spring", 3);
+        List<Video> result = youTubeService.searchVideosByTopic("spring", 3);
 
         // Verify we got search results
         assertNotNull(result, "Search result should not be null");
-        assertEquals("spring", result.query(), "Query should match");
-        assertNotNull(result.videos(), "Videos list should not be null");
 
-        if (!result.videos().isEmpty()) {
+        if (!result.isEmpty()) {
             // Verify video data if results found
-            VideoInfo firstVideo = result.videos().get(0);
+            Video firstVideo = result.get(0);
             assertNotNull(firstVideo.id(), "Video ID should not be null");
             assertNotNull(firstVideo.title(), "Video title should not be null");
             assertTrue(firstVideo.getYouTubeUrl().startsWith("https://www.youtube.com/"),
                       "Should be valid YouTube URL");
 
             System.out.printf("✅ Search Videos Test Passed:%n");
-            System.out.printf("   Found %d videos for 'spring'%n", result.videos().size());
-            result.videos().forEach(video ->
+            System.out.printf("   Found %d videos for 'spring'%n", result.size());
+            result.forEach(video ->
                 System.out.printf("   - %s%n", video.title())
             );
         } else {
@@ -110,7 +107,7 @@ class YouTubeServiceIntegrationTest {
     @Test
     void testGetTopVideos() {
         // Test getting top-performing videos
-        List<VideoInfo> topVideos = youTubeService.getTopVideos(3, "recent");
+        List<Video> topVideos = youTubeService.getTopVideos(3, "recent");
 
         // Verify we got videos back
         assertNotNull(topVideos, "Top videos list should not be null");
@@ -119,7 +116,7 @@ class YouTubeServiceIntegrationTest {
             assertTrue(topVideos.size() <= 3, "Should not exceed requested count");
 
             // Verify video data structure
-            VideoInfo firstVideo = topVideos.get(0);
+            Video firstVideo = topVideos.get(0);
             assertNotNull(firstVideo.id(), "Video ID should not be null");
             assertNotNull(firstVideo.title(), "Video title should not be null");
             assertTrue(firstVideo.getYouTubeUrl().startsWith("https://www.youtube.com/"),
@@ -127,8 +124,8 @@ class YouTubeServiceIntegrationTest {
 
             // Verify videos are sorted by view count (descending)
             if (topVideos.size() > 1) {
-                VideoInfo first = topVideos.get(0);
-                VideoInfo second = topVideos.get(1);
+                Video first = topVideos.get(0);
+                Video second = topVideos.get(1);
                 assertTrue(first.viewCount() >= second.viewCount(),
                           "Videos should be sorted by view count (descending)");
             }
