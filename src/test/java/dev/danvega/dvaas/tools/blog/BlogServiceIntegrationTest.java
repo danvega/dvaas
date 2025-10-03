@@ -4,7 +4,6 @@ import dev.danvega.dvaas.config.BlogProperties;
 import dev.danvega.dvaas.tools.blog.model.BlogPost;
 import dev.danvega.dvaas.tools.blog.model.BlogStats;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
@@ -15,15 +14,19 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Integration tests for BlogService with real RSS feed
- * These tests are only enabled when RSS integration testing is explicitly requested
+ * Integration tests for BlogService with real RSS feed.
+ * These tests make real HTTP calls to fetch the RSS feed.
+ * YouTube properties are required because @SpringBootTest loads the full application context.
  */
 @SpringBootTest
 @TestPropertySource(properties = {
     "dvaas.blog.rss-url=https://www.danvega.dev/rss.xml",
-    "dvaas.blog.cache-duration=PT30M"
+    "dvaas.blog.cache-duration=PT30M",
+    // YouTube properties required for full application context
+    "dvaas.youtube.api-key=test-youtube-api-key-1234567890",
+    "dvaas.youtube.channel-id=UC1234567890123456789012",
+    "dvaas.youtube.application-name=dvaas-test-youtube"
 })
-@EnabledIfEnvironmentVariable(named = "BLOG_INTEGRATION_TEST", matches = "true")
 class BlogServiceIntegrationTest {
 
     private final BlogService blogService;

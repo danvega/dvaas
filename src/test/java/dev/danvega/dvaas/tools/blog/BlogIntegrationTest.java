@@ -15,10 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(classes = Application.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @TestPropertySource(properties = {
     "dvaas.blog.rss-url=https://www.danvega.dev/rss.xml",
-    "dvaas.blog.cache-duration=PT30M",
-    "dvaas.youtube.api-key=test-api-key-12345678901234567890",
-    "dvaas.youtube.channel-id=UCtest123456789012345678",
-    "dvaas.youtube.application-name=dvaas-test-youtube"
+    "dvaas.blog.cache-duration=PT30M"
 })
 class BlogIntegrationTest {
 
