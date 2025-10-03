@@ -15,8 +15,8 @@ import org.springframework.test.context.TestPropertySource;
     // Ensure other services are configured for complete integration
     "dvaas.blog.rss-url=https://www.danvega.dev/rss.xml",
     "dvaas.blog.cache-duration=PT30M",
-    "dvaas.youtube.api-key=test-key",
-    "dvaas.youtube.channel-id=UCtest-channel-id-example",
+    "dvaas.youtube.api-key=test-youtube-api-key-1234567890",
+    "dvaas.youtube.channel-id=UC1234567890123456789012",
     "dvaas.youtube.application-name=test-app"
 })
 class SpeakingIntegrationTest {

@@ -5,8 +5,6 @@ import dev.danvega.dvaas.tools.speaking.model.SpeakingEngagement;
 import dev.danvega.dvaas.tools.speaking.model.SpeakingSearchResult;
 import dev.danvega.dvaas.tools.speaking.model.SpeakingStats;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -14,11 +12,10 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(classes = {SpeakingService.class})
-@TestPropertySource(properties = {
-    "dvaas.speaking.api-url=https://www.danvega.dev/api/speaking",
-    "dvaas.speaking.cache-duration=PT1M"
-})
+/**
+ * Unit tests for Speaking model classes and utilities.
+ * These tests verify the behavior of SpeakingEngagement, SpeakingSearchResult, SpeakingStats, and SpeakingProperties.
+ */
 class SpeakingServiceIntegrationTest {
 
     @Test
