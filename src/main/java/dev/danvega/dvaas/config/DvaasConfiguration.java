@@ -12,7 +12,8 @@ import org.springframework.context.annotation.Configuration;
     BlogProperties.class,
     YouTubeProperties.class,
     SpeakingProperties.class,
-    NewsletterProperties.class
+    NewsletterProperties.class,
+    PodcastProperties.class
 })
 public class DvaasConfiguration {
 }
