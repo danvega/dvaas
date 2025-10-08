@@ -1,9 +1,9 @@
-package dev.danvega.dvaas.tools.beehiiv;
+package dev.danvega.dvaas.tools.newsletter;
 
-import dev.danvega.dvaas.config.BeehiivProperties;
-import dev.danvega.dvaas.tools.beehiiv.model.Post;
-import dev.danvega.dvaas.tools.beehiiv.model.PostStats;
-import dev.danvega.dvaas.tools.beehiiv.model.PublicationStats;
+import dev.danvega.dvaas.config.NewsletterProperties;
+import dev.danvega.dvaas.tools.newsletter.model.Post;
+import dev.danvega.dvaas.tools.newsletter.model.PostStats;
+import dev.danvega.dvaas.tools.newsletter.model.PublicationStats;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -15,9 +15,9 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class BeehiivServiceTest {
+class NewsletterServiceTest {
 
-    private BeehiivProperties beehiivProperties;
+    private NewsletterProperties newsletterProperties;
     private List<Post> testPosts;
 
     @BeforeEach
@@ -28,7 +28,7 @@ class BeehiivServiceTest {
                 "bytesizedai", "pub_456"
         );
 
-        beehiivProperties = new BeehiivProperties(
+        newsletterProperties = new NewsletterProperties(
                 "test-api-key",
                 "https://api.beehiiv.com/v2",
                 Duration.ofMinutes(30),
@@ -92,27 +92,27 @@ class BeehiivServiceTest {
     }
 
     @Test
-    void testBeehiivPropertiesConfiguration() {
-        assertThat(beehiivProperties.apiKey()).isEqualTo("test-api-key");
-        assertThat(beehiivProperties.baseUrl()).isEqualTo("https://api.beehiiv.com/v2");
-        assertThat(beehiivProperties.getCacheDurationMinutes()).isEqualTo(30L);
-        assertThat(beehiivProperties.isEnabled()).isTrue();
-        assertThat(beehiivProperties.getPublicationNames()).containsExactlyInAnyOrder("danvega", "bytesizedai");
+    void testNewsletterPropertiesConfiguration() {
+        assertThat(newsletterProperties.apiKey()).isEqualTo("test-api-key");
+        assertThat(newsletterProperties.baseUrl()).isEqualTo("https://api.beehiiv.com/v2");
+        assertThat(newsletterProperties.getCacheDurationMinutes()).isEqualTo(30L);
+        assertThat(newsletterProperties.isEnabled()).isTrue();
+        assertThat(newsletterProperties.getPublicationNames()).containsExactlyInAnyOrder("danvega", "bytesizedai");
     }
 
     @Test
-    void testBeehiivPropertiesPublicationQueries() {
-        assertThat(beehiivProperties.hasPublication("danvega")).isTrue();
-        assertThat(beehiivProperties.hasPublication("bytesizedai")).isTrue();
-        assertThat(beehiivProperties.hasPublication("unknown")).isFalse();
-        assertThat(beehiivProperties.getPublicationId("danvega")).isEqualTo("pub_123");
-        assertThat(beehiivProperties.getPublicationId("bytesizedai")).isEqualTo("pub_456");
+    void testNewsletterPropertiesPublicationQueries() {
+        assertThat(newsletterProperties.hasPublication("danvega")).isTrue();
+        assertThat(newsletterProperties.hasPublication("bytesizedai")).isTrue();
+        assertThat(newsletterProperties.hasPublication("unknown")).isFalse();
+        assertThat(newsletterProperties.getPublicationId("danvega")).isEqualTo("pub_123");
+        assertThat(newsletterProperties.getPublicationId("bytesizedai")).isEqualTo("pub_456");
     }
 
     @Test
-    void testBeehiivPropertiesValidation() {
+    void testNewsletterPropertiesValidation() {
         // Test cache duration validation
-        assertThatThrownBy(() -> new BeehiivProperties(
+        assertThatThrownBy(() -> new NewsletterProperties(
                 "api-key",
                 "https://api.beehiiv.com/v2",
                 Duration.ofSeconds(30), // Less than 1 minute
@@ -121,7 +121,7 @@ class BeehiivServiceTest {
           .hasMessageContaining("at least 1 minute");
 
         // Test empty publications map
-        assertThatThrownBy(() -> new BeehiivProperties(
+        assertThatThrownBy(() -> new NewsletterProperties(
                 "api-key",
                 "https://api.beehiiv.com/v2",
                 Duration.ofMinutes(30),
@@ -130,7 +130,7 @@ class BeehiivServiceTest {
           .hasMessageContaining("at least one publication");
 
         // Test blank publication ID
-        assertThatThrownBy(() -> new BeehiivProperties(
+        assertThatThrownBy(() -> new NewsletterProperties(
                 "api-key",
                 "https://api.beehiiv.com/v2",
                 Duration.ofMinutes(30),

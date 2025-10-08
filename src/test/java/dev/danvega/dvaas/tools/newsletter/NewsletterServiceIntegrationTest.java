@@ -1,10 +1,10 @@
-package dev.danvega.dvaas.tools.beehiiv;
+package dev.danvega.dvaas.tools.newsletter;
 
-import dev.danvega.dvaas.config.BeehiivProperties;
-import dev.danvega.dvaas.tools.beehiiv.model.Post;
-import dev.danvega.dvaas.tools.beehiiv.model.PostSearchResult;
-import dev.danvega.dvaas.tools.beehiiv.model.PostStats;
-import dev.danvega.dvaas.tools.beehiiv.model.PublicationStats;
+import dev.danvega.dvaas.config.NewsletterProperties;
+import dev.danvega.dvaas.tools.newsletter.model.Post;
+import dev.danvega.dvaas.tools.newsletter.model.PostSearchResult;
+import dev.danvega.dvaas.tools.newsletter.model.PostStats;
+import dev.danvega.dvaas.tools.newsletter.model.PublicationStats;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -17,18 +17,18 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Integration tests for Beehiiv model classes and utilities.
- * These tests verify the behavior of Post, PostStats, PostSearchResult, PublicationStats, and BeehiivProperties.
+ * These tests verify the behavior of Post, PostStats, PostSearchResult, PublicationStats, and NewsletterProperties.
  */
-class BeehiivServiceIntegrationTest {
+class NewsletterServiceIntegrationTest {
 
     @Test
-    void testBeehiivPropertiesConfiguration() {
+    void testNewsletterPropertiesConfiguration() {
         Map<String, String> publications = Map.of(
                 "danvega", "pub_123",
                 "bytesizedai", "pub_456"
         );
 
-        BeehiivProperties properties = new BeehiivProperties(
+        NewsletterProperties properties = new NewsletterProperties(
                 "test-api-key",
                 "https://api.beehiiv.com/v2",
                 Duration.ofMinutes(30),
@@ -45,11 +45,11 @@ class BeehiivServiceIntegrationTest {
     }
 
     @Test
-    void testBeehiivPropertiesValidation() {
+    void testNewsletterPropertiesValidation() {
         Map<String, String> publications = Map.of("danvega", "pub_123");
 
         // Test invalid cache duration
-        assertThatThrownBy(() -> new BeehiivProperties(
+        assertThatThrownBy(() -> new NewsletterProperties(
                 "api-key",
                 "https://api.beehiiv.com/v2",
                 Duration.ofSeconds(30),
@@ -58,7 +58,7 @@ class BeehiivServiceIntegrationTest {
           .hasMessageContaining("at least 1 minute");
 
         // Test empty publications
-        assertThatThrownBy(() -> new BeehiivProperties(
+        assertThatThrownBy(() -> new NewsletterProperties(
                 "api-key",
                 "https://api.beehiiv.com/v2",
                 Duration.ofMinutes(30),

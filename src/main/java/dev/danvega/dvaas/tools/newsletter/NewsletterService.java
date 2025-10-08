@@ -1,11 +1,11 @@
-package dev.danvega.dvaas.tools.beehiiv;
+package dev.danvega.dvaas.tools.newsletter;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.danvega.dvaas.config.BeehiivProperties;
-import dev.danvega.dvaas.tools.beehiiv.model.Post;
-import dev.danvega.dvaas.tools.beehiiv.model.PostStats;
-import dev.danvega.dvaas.tools.beehiiv.model.PublicationStats;
+import dev.danvega.dvaas.config.NewsletterProperties;
+import dev.danvega.dvaas.tools.newsletter.model.Post;
+import dev.danvega.dvaas.tools.newsletter.model.PostStats;
+import dev.danvega.dvaas.tools.newsletter.model.PublicationStats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -25,28 +25,28 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
- * Service for interacting with the Beehiiv API
+ * Service for interacting with the newsletter API (Beehiiv)
  * Supports multiple publications (e.g., danvega, bytesizedai)
  */
 @Service
-@ConditionalOnProperty(name = "dvaas.beehiiv.api-key")
-public class BeehiivService {
+@ConditionalOnProperty(name = "dvaas.newsletter.api-key")
+public class NewsletterService {
 
-    private static final Logger logger = LoggerFactory.getLogger(BeehiivService.class);
+    private static final Logger logger = LoggerFactory.getLogger(NewsletterService.class);
 
-    private final BeehiivProperties beehiivProperties;
+    private final NewsletterProperties newsletterProperties;
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
     private final Map<String, Object> cache = new ConcurrentHashMap<>();
     private final Map<String, LocalDateTime> cacheTimestamps = new ConcurrentHashMap<>();
 
-    public BeehiivService(BeehiivProperties beehiivProperties) {
-        this.beehiivProperties = beehiivProperties;
+    public NewsletterService(NewsletterProperties newsletterProperties) {
+        this.newsletterProperties = newsletterProperties;
         this.httpClient = HttpClient.newHttpClient();
         this.objectMapper = new ObjectMapper();
-        logger.info("Beehiiv service initialized with base URL: {}", beehiivProperties.baseUrl());
-        logger.info("Beehiiv publications: {}", beehiivProperties.getPublicationNames());
-        logger.info("Beehiiv cache duration: {} minutes", beehiivProperties.getCacheDurationMinutes());
+        logger.info("Newsletter service initialized with base URL: {}", newsletterProperties.baseUrl());
+        logger.info("Newsletter publications: {}", newsletterProperties.getPublicationNames());
+        logger.info("Newsletter cache duration: {} minutes", newsletterProperties.getCacheDurationMinutes());
     }
 
     /**
@@ -57,8 +57,8 @@ public class BeehiivService {
             return getAllPostsFromAllPublications(maxResults);
         }
 
-        if (!beehiivProperties.hasPublication(publication)) {
-            throw new IllegalArgumentException("Unknown publication: " + publication + ". Available: " + beehiivProperties.getPublicationNames());
+        if (!newsletterProperties.hasPublication(publication)) {
+            throw new IllegalArgumentException("Unknown publication: " + publication + ". Available: " + newsletterProperties.getPublicationNames());
         }
 
         List<Post> allPosts = getCachedPosts(publication);
@@ -138,8 +138,8 @@ public class BeehiivService {
      * Get publication statistics
      */
     public PublicationStats getPublicationStats(String publication) {
-        if (!"all".equalsIgnoreCase(publication) && !beehiivProperties.hasPublication(publication)) {
-            throw new IllegalArgumentException("Unknown publication: " + publication + ". Available: " + beehiivProperties.getPublicationNames());
+        if (!"all".equalsIgnoreCase(publication) && !newsletterProperties.hasPublication(publication)) {
+            throw new IllegalArgumentException("Unknown publication: " + publication + ". Available: " + newsletterProperties.getPublicationNames());
         }
 
         List<Post> posts = getPostsForPublication(publication);
@@ -174,7 +174,7 @@ public class BeehiivService {
                 .orElse(null);
 
         return new PublicationStats(
-                beehiivProperties.getPublicationId(publication),
+                newsletterProperties.getPublicationId(publication),
                 publication,
                 totalPosts,
                 publishedPosts,
@@ -199,8 +199,8 @@ public class BeehiivService {
             return getAllPostsFromAllPublications(50);
         }
 
-        if (!beehiivProperties.hasPublication(publication)) {
-            throw new IllegalArgumentException("Unknown publication: " + publication + ". Available: " + beehiivProperties.getPublicationNames());
+        if (!newsletterProperties.hasPublication(publication)) {
+            throw new IllegalArgumentException("Unknown publication: " + publication + ". Available: " + newsletterProperties.getPublicationNames());
         }
 
         return getCachedPosts(publication);
@@ -212,7 +212,7 @@ public class BeehiivService {
     private List<Post> getAllPostsFromAllPublications(int maxResults) {
         List<Post> allPosts = new ArrayList<>();
 
-        for (String pubName : beehiivProperties.getPublicationNames()) {
+        for (String pubName : newsletterProperties.getPublicationNames()) {
             allPosts.addAll(getCachedPosts(pubName));
         }
 
@@ -238,14 +238,14 @@ public class BeehiivService {
 
         if (needsCacheRefresh(cacheKey)) {
             try {
-                String publicationId = beehiivProperties.getPublicationId(publication);
+                String publicationId = newsletterProperties.getPublicationId(publication);
                 List<Post> posts = fetchPostsFromApi(publicationId, publication);
                 cache.put(cacheKey, posts);
                 cacheTimestamps.put(cacheKey, LocalDateTime.now());
-                logger.info("Beehiiv cache refreshed for publication '{}' with {} posts", publication, posts.size());
+                logger.info("Newsletter cache refreshed for publication '{}' with {} posts", publication, posts.size());
                 return posts;
             } catch (Exception e) {
-                logger.error("Failed to refresh Beehiiv cache for publication '{}'", publication, e);
+                logger.error("Failed to refresh newsletter cache for publication '{}'", publication, e);
                 return (List<Post>) cache.getOrDefault(cacheKey, List.of());
             }
         }
@@ -259,7 +259,7 @@ public class BeehiivService {
     private boolean needsCacheRefresh(String cacheKey) {
         LocalDateTime lastCacheTime = cacheTimestamps.get(cacheKey);
         return lastCacheTime == null ||
-               ChronoUnit.MINUTES.between(lastCacheTime, LocalDateTime.now()) >= beehiivProperties.getCacheDurationMinutes() ||
+               ChronoUnit.MINUTES.between(lastCacheTime, LocalDateTime.now()) >= newsletterProperties.getCacheDurationMinutes() ||
                !cache.containsKey(cacheKey);
     }
 
@@ -268,13 +268,13 @@ public class BeehiivService {
      */
     private List<Post> fetchPostsFromApi(String publicationId, String publicationName) throws IOException, InterruptedException {
         String url = String.format("%s/publications/%s/posts?limit=50&order_by=publish_date&direction=desc",
-                beehiivProperties.baseUrl(), publicationId);
+                newsletterProperties.baseUrl(), publicationId);
 
         logger.info("Fetching posts from Beehiiv API for publication '{}': {}", publicationName, url);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .header("Authorization", "Bearer " + beehiivProperties.apiKey())
+                .header("Authorization", "Bearer " + newsletterProperties.apiKey())
                 .header("Accept", "application/json")
                 .GET()
                 .build();

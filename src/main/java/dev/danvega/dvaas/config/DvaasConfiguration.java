@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
     BlogProperties.class,
     YouTubeProperties.class,
     SpeakingProperties.class,
-    BeehiivProperties.class
+    NewsletterProperties.class
 })
 public class DvaasConfiguration {
 }

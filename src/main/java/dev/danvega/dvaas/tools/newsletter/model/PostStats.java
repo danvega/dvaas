@@ -1,7 +1,7 @@
-package dev.danvega.dvaas.tools.beehiiv.model;
+package dev.danvega.dvaas.tools.newsletter.model;
 
 /**
- * Represents statistics for a Beehiiv post
+ * Represents statistics for a newsletter post
  */
 public record PostStats(
         long opens,

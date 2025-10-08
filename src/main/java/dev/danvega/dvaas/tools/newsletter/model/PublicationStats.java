@@ -1,9 +1,9 @@
-package dev.danvega.dvaas.tools.beehiiv.model;
+package dev.danvega.dvaas.tools.newsletter.model;
 
 import java.time.LocalDateTime;
 
 /**
- * Represents statistics for a Beehiiv publication
+ * Represents statistics for a newsletter publication
  */
 public record PublicationStats(
         String publicationId,

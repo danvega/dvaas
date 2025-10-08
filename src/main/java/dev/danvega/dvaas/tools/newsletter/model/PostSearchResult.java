@@ -1,9 +1,9 @@
-package dev.danvega.dvaas.tools.beehiiv.model;
+package dev.danvega.dvaas.tools.newsletter.model;
 
 import java.util.List;
 
 /**
- * Represents search results for Beehiiv posts
+ * Represents search results for newsletter posts
  */
 public record PostSearchResult(
         List<Post> posts,

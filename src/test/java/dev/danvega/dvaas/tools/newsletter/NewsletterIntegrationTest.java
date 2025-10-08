@@ -1,4 +1,4 @@
-package dev.danvega.dvaas.tools.beehiiv;
+package dev.danvega.dvaas.tools.newsletter;
 
 import dev.danvega.dvaas.Application;
 import org.junit.jupiter.api.Test;
@@ -14,11 +14,11 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @SpringBootTest(classes = Application.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @TestPropertySource(properties = {
-        "dvaas.beehiiv.api-key=test-api-key",
-        "dvaas.beehiiv.base-url=https://api.beehiiv.com/v2",
-        "dvaas.beehiiv.cache-duration=PT30M",
-        "dvaas.beehiiv.publications.danvega=pub_test_123",
-        "dvaas.beehiiv.publications.bytesizedai=pub_test_456"
+        "dvaas.newsletter.api-key=test-api-key",
+        "dvaas.newsletter.base-url=https://api.beehiiv.com/v2",
+        "dvaas.newsletter.cache-duration=PT30M",
+        "dvaas.newsletter.publications.danvega=pub_test_123",
+        "dvaas.newsletter.publications.bytesizedai=pub_test_456"
 })
 class BeehiivIntegrationTest {
 
@@ -26,10 +26,10 @@ class BeehiivIntegrationTest {
     private ApplicationContext applicationContext;
 
     @Autowired(required = false)
-    private BeehiivService beehiivService;
+    private NewsletterService newsletterService;
 
     @Autowired(required = false)
-    private BeehiivTools beehiivTools;
+    private NewsletterTools newsletterTools;
 
     @Test
     void contextLoads() {
@@ -37,21 +37,21 @@ class BeehiivIntegrationTest {
     }
 
     @Test
-    void beehiivService_ShouldBeCreated() {
-        assertNotNull(beehiivService, "BeehiivService should be created when API key and publications are configured");
+    void newsletterService_ShouldBeCreated() {
+        assertNotNull(newsletterService, "NewsletterService should be created when API key and publications are configured");
     }
 
     @Test
-    void beehiivTools_ShouldBeCreated() {
-        assertNotNull(beehiivTools, "BeehiivTools should be created when BeehiivService is available");
+    void newsletterTools_ShouldBeCreated() {
+        assertNotNull(newsletterTools, "NewsletterTools should be created when NewsletterService is available");
     }
 
     @Test
     void mcpToolsAreScannable() {
         // Verify that our MCP tools are discoverable by the Spring AI MCP framework
-        assertTrue(applicationContext.containsBean("beehiivTools"));
+        assertTrue(applicationContext.containsBean("newsletterTools"));
 
-        BeehiivTools tools = applicationContext.getBean("beehiivTools", BeehiivTools.class);
+        NewsletterTools tools = applicationContext.getBean("newsletterTools", NewsletterTools.class);
         assertNotNull(tools);
 
         // Note: We cannot test actual API calls in integration tests without API credentials
@@ -60,9 +60,9 @@ class BeehiivIntegrationTest {
     }
 
     @Test
-    void beehiivService_ShouldHaveCorrectConfiguration() {
+    void newsletterService_ShouldHaveCorrectConfiguration() {
         // Verify that the service is properly configured
-        assertNotNull(beehiivService);
+        assertNotNull(newsletterService);
 
         // The service should be initialized with the configured properties
         // This verifies the @ConditionalOnProperty annotations are working correctly

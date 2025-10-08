@@ -1,8 +1,8 @@
-package dev.danvega.dvaas.tools.beehiiv;
+package dev.danvega.dvaas.tools.newsletter;
 
-import dev.danvega.dvaas.tools.beehiiv.model.Post;
-import dev.danvega.dvaas.tools.beehiiv.model.PostStats;
-import dev.danvega.dvaas.tools.beehiiv.model.PublicationStats;
+import dev.danvega.dvaas.tools.newsletter.model.Post;
+import dev.danvega.dvaas.tools.newsletter.model.PostStats;
+import dev.danvega.dvaas.tools.newsletter.model.PublicationStats;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,17 +18,17 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 /**
- * Unit tests for BeehiivTools MCP functionality with mocked BeehiivService.
+ * Unit tests for NewsletterTools MCP functionality with mocked NewsletterService.
  */
 @SpringBootTest
 @ActiveProfiles("test")
-class BeehiivToolsTest {
+class NewsletterToolsTest {
 
     @Autowired
-    private BeehiivTools beehiivTools;
+    private NewsletterTools newsletterTools;
 
     @MockitoBean
-    private BeehiivService beehiivService;
+    private NewsletterService newsletterService;
 
     @Test
     void testGetLatestPostsWithDefaultParameters() {
@@ -70,10 +70,10 @@ class BeehiivToolsTest {
                 )
         );
 
-        when(beehiivService.getLatestPosts("all", 10)).thenReturn(mockPosts);
+        when(newsletterService.getLatestPosts("all", 10)).thenReturn(mockPosts);
 
         // When
-        List<Post> result = beehiivTools.getLatestPosts(null, null);
+        List<Post> result = newsletterTools.getLatestPosts(null, null);
 
         // Then
         assertNotNull(result);
@@ -105,10 +105,10 @@ class BeehiivToolsTest {
                 )
         );
 
-        when(beehiivService.getLatestPosts("danvega", 10)).thenReturn(mockPosts);
+        when(newsletterService.getLatestPosts("danvega", 10)).thenReturn(mockPosts);
 
         // When
-        List<Post> result = beehiivTools.getLatestPosts("danvega", null);
+        List<Post> result = newsletterTools.getLatestPosts("danvega", null);
 
         // Then
         assertNotNull(result);
@@ -128,10 +128,10 @@ class BeehiivToolsTest {
                         LocalDateTime.now(), "https://example.com/3")
         );
 
-        when(beehiivService.getLatestPosts("all", 3)).thenReturn(mockPosts);
+        when(newsletterService.getLatestPosts("all", 3)).thenReturn(mockPosts);
 
         // When
-        List<Post> result = beehiivTools.getLatestPosts(null, "3");
+        List<Post> result = newsletterTools.getLatestPosts(null, "3");
 
         // Then
         assertNotNull(result);
@@ -141,10 +141,10 @@ class BeehiivToolsTest {
     @Test
     void testGetLatestPostsEmpty() {
         // Given - no posts
-        when(beehiivService.getLatestPosts(anyString(), anyInt())).thenReturn(List.of());
+        when(newsletterService.getLatestPosts(anyString(), anyInt())).thenReturn(List.of());
 
         // When
-        List<Post> result = beehiivTools.getLatestPosts("all", "10");
+        List<Post> result = newsletterTools.getLatestPosts("all", "10");
 
         // Then
         assertNotNull(result);
@@ -174,10 +174,10 @@ class BeehiivToolsTest {
                 )
         );
 
-        when(beehiivService.searchPostsByKeyword("all", "spring", 10)).thenReturn(mockPosts);
+        when(newsletterService.searchPostsByKeyword("all", "spring", 10)).thenReturn(mockPosts);
 
         // When
-        List<Post> result = beehiivTools.searchPostsByKeyword("spring", null, null);
+        List<Post> result = newsletterTools.searchPostsByKeyword("spring", null, null);
 
         // Then
         assertNotNull(result);
@@ -193,10 +193,10 @@ class BeehiivToolsTest {
                         LocalDateTime.now(), "https://example.com/1")
         );
 
-        when(beehiivService.searchPostsByKeyword("bytesizedai", "ai", 10)).thenReturn(mockPosts);
+        when(newsletterService.searchPostsByKeyword("bytesizedai", "ai", 10)).thenReturn(mockPosts);
 
         // When
-        List<Post> result = beehiivTools.searchPostsByKeyword("ai", "bytesizedai", null);
+        List<Post> result = newsletterTools.searchPostsByKeyword("ai", "bytesizedai", null);
 
         // Then
         assertNotNull(result);
@@ -207,10 +207,10 @@ class BeehiivToolsTest {
     @Test
     void testSearchPostsByKeywordNoResults() {
         // Given - no results
-        when(beehiivService.searchPostsByKeyword(anyString(), anyString(), anyInt())).thenReturn(List.of());
+        when(newsletterService.searchPostsByKeyword(anyString(), anyString(), anyInt())).thenReturn(List.of());
 
         // When
-        List<Post> result = beehiivTools.searchPostsByKeyword("nonexistent", null, null);
+        List<Post> result = newsletterTools.searchPostsByKeyword("nonexistent", null, null);
 
         // Then
         assertNotNull(result);
@@ -221,7 +221,7 @@ class BeehiivToolsTest {
     void testSearchPostsByKeywordWithNullKeyword() {
         // When & Then - should throw exception
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            beehiivTools.searchPostsByKeyword(null, null, null);
+            newsletterTools.searchPostsByKeyword(null, null, null);
         });
         assertEquals("Keyword parameter is required.", exception.getMessage());
     }
@@ -230,7 +230,7 @@ class BeehiivToolsTest {
     void testSearchPostsByKeywordWithEmptyKeyword() {
         // When & Then - should throw exception
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            beehiivTools.searchPostsByKeyword("", null, null);
+            newsletterTools.searchPostsByKeyword("", null, null);
         });
         assertEquals("Keyword parameter is required.", exception.getMessage());
     }
@@ -243,10 +243,10 @@ class BeehiivToolsTest {
                         LocalDateTime.now(), "https://example.com/1")
         );
 
-        when(beehiivService.getPostsByStatus("all", "confirmed", 10)).thenReturn(mockPosts);
+        when(newsletterService.getPostsByStatus("all", "confirmed", 10)).thenReturn(mockPosts);
 
         // When
-        List<Post> result = beehiivTools.getPostsByStatus(null, null, null);
+        List<Post> result = newsletterTools.getPostsByStatus(null, null, null);
 
         // Then
         assertNotNull(result);
@@ -262,10 +262,10 @@ class BeehiivToolsTest {
                         null, null)
         );
 
-        when(beehiivService.getPostsByStatus("all", "draft", 10)).thenReturn(mockPosts);
+        when(newsletterService.getPostsByStatus("all", "draft", 10)).thenReturn(mockPosts);
 
         // When
-        List<Post> result = beehiivTools.getPostsByStatus("draft", null, null);
+        List<Post> result = newsletterTools.getPostsByStatus("draft", null, null);
 
         // Then
         assertNotNull(result);
@@ -281,10 +281,10 @@ class BeehiivToolsTest {
                         LocalDateTime.now().minusYears(1), "https://example.com/1")
         );
 
-        when(beehiivService.getPostsByStatus("all", "archived", 10)).thenReturn(mockPosts);
+        when(newsletterService.getPostsByStatus("all", "archived", 10)).thenReturn(mockPosts);
 
         // When
-        List<Post> result = beehiivTools.getPostsByStatus("archived", null, null);
+        List<Post> result = newsletterTools.getPostsByStatus("archived", null, null);
 
         // Then
         assertNotNull(result);
@@ -300,10 +300,10 @@ class BeehiivToolsTest {
                         LocalDateTime.now(), "https://example.com/1")
         );
 
-        when(beehiivService.getPostsByStatus("bytesizedai", "confirmed", 10)).thenReturn(mockPosts);
+        when(newsletterService.getPostsByStatus("bytesizedai", "confirmed", 10)).thenReturn(mockPosts);
 
         // When
-        List<Post> result = beehiivTools.getPostsByStatus("confirmed", "bytesizedai", null);
+        List<Post> result = newsletterTools.getPostsByStatus("confirmed", "bytesizedai", null);
 
         // Then
         assertNotNull(result);
@@ -331,10 +331,10 @@ class BeehiivToolsTest {
                 LocalDateTime.of(2020, 1, 1, 0, 0)
         );
 
-        when(beehiivService.getPublicationStats("all")).thenReturn(mockStats);
+        when(newsletterService.getPublicationStats("all")).thenReturn(mockStats);
 
         // When
-        PublicationStats result = beehiivTools.getPublicationStats(null);
+        PublicationStats result = newsletterTools.getPublicationStats(null);
 
         // Then
         assertNotNull(result);
@@ -354,10 +354,10 @@ class BeehiivToolsTest {
                 LocalDateTime.of(2022, 6, 1, 0, 0)
         );
 
-        when(beehiivService.getPublicationStats("bytesizedai")).thenReturn(mockStats);
+        when(newsletterService.getPublicationStats("bytesizedai")).thenReturn(mockStats);
 
         // When
-        PublicationStats result = beehiivTools.getPublicationStats("bytesizedai");
+        PublicationStats result = newsletterTools.getPublicationStats("bytesizedai");
 
         // Then
         assertNotNull(result);
@@ -368,10 +368,10 @@ class BeehiivToolsTest {
     @Test
     void testParseCountWithValidNumber() {
         // Given
-        when(beehiivService.getLatestPosts("all", 25)).thenReturn(List.of());
+        when(newsletterService.getLatestPosts("all", 25)).thenReturn(List.of());
 
         // When
-        List<Post> result = beehiivTools.getLatestPosts(null, "25");
+        List<Post> result = newsletterTools.getLatestPosts(null, "25");
 
         // Then - parseCount should use 25
         assertNotNull(result);
@@ -380,10 +380,10 @@ class BeehiivToolsTest {
     @Test
     void testParseCountWithInvalidNumber() {
         // Given
-        when(beehiivService.getLatestPosts("all", 10)).thenReturn(List.of());
+        when(newsletterService.getLatestPosts("all", 10)).thenReturn(List.of());
 
         // When
-        List<Post> result = beehiivTools.getLatestPosts(null, "invalid");
+        List<Post> result = newsletterTools.getLatestPosts(null, "invalid");
 
         // Then - parseCount should use default of 10
         assertNotNull(result);
@@ -392,10 +392,10 @@ class BeehiivToolsTest {
     @Test
     void testParseCountExceedsMaximum() {
         // Given
-        when(beehiivService.getLatestPosts("all", 50)).thenReturn(List.of());
+        when(newsletterService.getLatestPosts("all", 50)).thenReturn(List.of());
 
         // When
-        List<Post> result = beehiivTools.getLatestPosts(null, "100");
+        List<Post> result = newsletterTools.getLatestPosts(null, "100");
 
         // Then - parseCount should cap at 50
         assertNotNull(result);

@@ -1,8 +1,8 @@
-package dev.danvega.dvaas.tools.beehiiv;
+package dev.danvega.dvaas.tools.newsletter;
 
-import dev.danvega.dvaas.config.BeehiivProperties;
-import dev.danvega.dvaas.tools.beehiiv.model.Post;
-import dev.danvega.dvaas.tools.beehiiv.model.PublicationStats;
+import dev.danvega.dvaas.config.NewsletterProperties;
+import dev.danvega.dvaas.tools.newsletter.model.Post;
+import dev.danvega.dvaas.tools.newsletter.model.PublicationStats;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
@@ -22,8 +22,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @EnabledIfEnvironmentVariable(named = "BEEHIIV_API_KEY", matches = ".+")
 class BeehiivApiIntegrationTest {
 
-    private BeehiivService beehiivService;
-    private BeehiivProperties beehiivProperties;
+    private NewsletterService newsletterService;
+    private NewsletterProperties newsletterProperties;
 
     @BeforeEach
     void setUp() {
@@ -38,7 +38,7 @@ class BeehiivApiIntegrationTest {
                 "bytesizedai", bytesizedaiPubId != null ? bytesizedaiPubId : "pub_unknown"
         );
 
-        beehiivProperties = new BeehiivProperties(
+        newsletterProperties = new NewsletterProperties(
                 apiKey,
                 "https://api.beehiiv.com/v2",
                 Duration.ofMinutes(1), // Short cache for testing
@@ -46,14 +46,14 @@ class BeehiivApiIntegrationTest {
         );
 
         // Create service with real properties
-        beehiivService = new BeehiivService(beehiivProperties);
+        newsletterService = new NewsletterService(newsletterProperties);
     }
 
     @Test
     void testGetLatestPostsFromDanvegaPublication() {
         System.out.println("\n=== Testing: Get latest posts from danvega publication ===");
 
-        List<Post> posts = beehiivService.getLatestPosts("danvega", 5);
+        List<Post> posts = newsletterService.getLatestPosts("danvega", 5);
 
         System.out.println("Retrieved " + posts.size() + " posts from danvega publication");
 
@@ -81,7 +81,7 @@ class BeehiivApiIntegrationTest {
     void testGetLatestPostsFromBytesizedaiPublication() {
         System.out.println("\n=== Testing: Get latest posts from bytesizedai publication ===");
 
-        List<Post> posts = beehiivService.getLatestPosts("bytesizedai", 5);
+        List<Post> posts = newsletterService.getLatestPosts("bytesizedai", 5);
 
         System.out.println("Retrieved " + posts.size() + " posts from bytesizedai publication");
 
@@ -100,7 +100,7 @@ class BeehiivApiIntegrationTest {
     void testGetLatestPostsFromAllPublications() {
         System.out.println("\n=== Testing: Get latest posts from all publications ===");
 
-        List<Post> posts = beehiivService.getLatestPosts("all", 10);
+        List<Post> posts = newsletterService.getLatestPosts("all", 10);
 
         System.out.println("Retrieved " + posts.size() + " posts from all publications");
 
@@ -131,7 +131,7 @@ class BeehiivApiIntegrationTest {
         System.out.println("\n=== Testing: Search posts by keyword ===");
 
         String keyword = "spring";
-        List<Post> posts = beehiivService.searchPostsByKeyword("all", keyword, 10);
+        List<Post> posts = newsletterService.searchPostsByKeyword("all", keyword, 10);
 
         System.out.println("Found " + posts.size() + " posts matching keyword '" + keyword + "'");
 
@@ -151,7 +151,7 @@ class BeehiivApiIntegrationTest {
     void testGetPostsByStatus() {
         System.out.println("\n=== Testing: Get posts by status ===");
 
-        List<Post> confirmedPosts = beehiivService.getPostsByStatus("all", "confirmed", 10);
+        List<Post> confirmedPosts = newsletterService.getPostsByStatus("all", "confirmed", 10);
 
         System.out.println("Retrieved " + confirmedPosts.size() + " confirmed posts");
 
@@ -163,7 +163,7 @@ class BeehiivApiIntegrationTest {
         }
 
         // Test draft posts
-        List<Post> draftPosts = beehiivService.getPostsByStatus("all", "draft", 5);
+        List<Post> draftPosts = newsletterService.getPostsByStatus("all", "draft", 5);
         System.out.println("Retrieved " + draftPosts.size() + " draft posts");
 
         if (!draftPosts.isEmpty()) {
@@ -176,7 +176,7 @@ class BeehiivApiIntegrationTest {
     void testGetPublicationStats() {
         System.out.println("\n=== Testing: Get publication stats ===");
 
-        PublicationStats danvegaStats = beehiivService.getPublicationStats("danvega");
+        PublicationStats danvegaStats = newsletterService.getPublicationStats("danvega");
 
         System.out.println("\nDanvega Publication Stats:");
         System.out.println("  Name: " + danvegaStats.name());
@@ -191,7 +191,7 @@ class BeehiivApiIntegrationTest {
         assertThat(danvegaStats.totalPosts()).isGreaterThan(0);
 
         // Test bytesizedai stats
-        PublicationStats bytesizedaiStats = beehiivService.getPublicationStats("bytesizedai");
+        PublicationStats bytesizedaiStats = newsletterService.getPublicationStats("bytesizedai");
 
         System.out.println("\nBytesizedai Publication Stats:");
         System.out.println("  Name: " + bytesizedaiStats.name());
@@ -206,7 +206,7 @@ class BeehiivApiIntegrationTest {
     void testPostDataIntegrity() {
         System.out.println("\n=== Testing: Post data integrity ===");
 
-        List<Post> posts = beehiivService.getLatestPosts("danvega", 3);
+        List<Post> posts = newsletterService.getLatestPosts("danvega", 3);
 
         assertThat(posts).isNotEmpty();
 

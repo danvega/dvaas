@@ -1,7 +1,7 @@
-package dev.danvega.dvaas.tools.beehiiv;
+package dev.danvega.dvaas.tools.newsletter;
 
-import dev.danvega.dvaas.tools.beehiiv.model.Post;
-import dev.danvega.dvaas.tools.beehiiv.model.PublicationStats;
+import dev.danvega.dvaas.tools.newsletter.model.Post;
+import dev.danvega.dvaas.tools.newsletter.model.PublicationStats;
 import org.springaicommunity.mcp.annotation.McpTool;
 import org.springaicommunity.mcp.annotation.McpToolParam;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -10,21 +10,21 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 /**
- * MCP tools for Beehiiv newsletter operations
+ * MCP tools for newsletter operations
  * Supports multiple publications (danvega, bytesizedai)
  */
 @Component
-@ConditionalOnBean(BeehiivService.class)
-public class BeehiivTools {
+@ConditionalOnBean(NewsletterService.class)
+public class NewsletterTools {
 
-    private final BeehiivService beehiivService;
+    private final NewsletterService newsletterService;
 
-    public BeehiivTools(BeehiivService beehiivService) {
-        this.beehiivService = beehiivService;
+    public NewsletterTools(NewsletterService newsletterService) {
+        this.newsletterService = newsletterService;
     }
 
-    @McpTool(name = "beehiiv-get-latest-posts",
-             description = "Get the most recent newsletter posts from Dan Vega's Beehiiv publications (danvega, bytesizedai, or all)")
+    @McpTool(name = "newsletter-get-latest-posts",
+             description = "Get the most recent newsletter posts from Dan Vega's publications (danvega, bytesizedai, or all)")
     public List<Post> getLatestPosts(
             @McpToolParam(description = "Publication name: 'danvega', 'bytesizedai', or 'all' (default: 'all')",
                          required = false) String publication,
@@ -34,10 +34,10 @@ public class BeehiivTools {
         String pubFilter = publication != null && !publication.trim().isEmpty() ? publication.trim() : "all";
         int maxResults = parseCount(count, 10, 50);
 
-        return beehiivService.getLatestPosts(pubFilter, maxResults);
+        return newsletterService.getLatestPosts(pubFilter, maxResults);
     }
 
-    @McpTool(name = "beehiiv-search-posts-by-keyword",
+    @McpTool(name = "newsletter-search-posts-by-keyword",
              description = "Search for newsletter posts by keyword in title, content, or authors (e.g., 'spring', 'ai', 'java')")
     public List<Post> searchPostsByKeyword(
             @McpToolParam(description = "Keyword to search for in post titles, content, and authors",
@@ -54,10 +54,10 @@ public class BeehiivTools {
         String pubFilter = publication != null && !publication.trim().isEmpty() ? publication.trim() : "all";
         int maxResults = parseCount(count, 10, 50);
 
-        return beehiivService.searchPostsByKeyword(pubFilter, keyword.trim(), maxResults);
+        return newsletterService.searchPostsByKeyword(pubFilter, keyword.trim(), maxResults);
     }
 
-    @McpTool(name = "beehiiv-get-posts-by-status",
+    @McpTool(name = "newsletter-get-posts-by-status",
              description = "Get newsletter posts filtered by status: 'draft' (not scheduled), 'confirmed' (published/scheduled), 'archived', or 'all'")
     public List<Post> getPostsByStatus(
             @McpToolParam(description = "Post status: 'draft', 'confirmed', 'archived', or 'all' (default: 'confirmed')",
@@ -71,17 +71,17 @@ public class BeehiivTools {
         String pubFilter = publication != null && !publication.trim().isEmpty() ? publication.trim() : "all";
         int maxResults = parseCount(count, 10, 50);
 
-        return beehiivService.getPostsByStatus(pubFilter, statusFilter, maxResults);
+        return newsletterService.getPostsByStatus(pubFilter, statusFilter, maxResults);
     }
 
-    @McpTool(name = "beehiiv-get-publication-stats",
-             description = "Get statistics and information about Dan Vega's Beehiiv newsletter publications")
+    @McpTool(name = "newsletter-get-publication-stats",
+             description = "Get statistics and information about Dan Vega's newsletter publications")
     public PublicationStats getPublicationStats(
             @McpToolParam(description = "Publication name: 'danvega', 'bytesizedai', or 'all' (default: 'all')",
                          required = false) String publication) {
 
         String pubFilter = publication != null && !publication.trim().isEmpty() ? publication.trim() : "all";
-        return beehiivService.getPublicationStats(pubFilter);
+        return newsletterService.getPublicationStats(pubFilter);
     }
 
     /**

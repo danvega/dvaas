@@ -1,10 +1,10 @@
-package dev.danvega.dvaas.tools.beehiiv.model;
+package dev.danvega.dvaas.tools.newsletter.model;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Represents a Beehiiv newsletter post
+ * Represents a newsletter post
  */
 public record Post(
         String id,
