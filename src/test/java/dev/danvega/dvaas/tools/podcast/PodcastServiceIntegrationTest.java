@@ -20,12 +20,13 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @SpringBootTest
 @TestPropertySource(properties = {
-    "dvaas.podcast.api-key=cnlEijfC9qVzfwXAXuq8cw",
+    "dvaas.podcast.api-key=test-podcast-api-key-1234567890",
     "dvaas.podcast.application-name=dvaas-test-podcast",
     "dvaas.podcast.cache-duration=PT30M",
     "dvaas.podcast.spring-office-hours-show-id=41020",
     "dvaas.podcast.fundamentals-show-id=69333",
     // Required for full application context
+    "spring.ai.anthropic.api-key=test-key",
     "dvaas.blog.rss-url=https://www.danvega.dev/rss.xml",
     "dvaas.youtube.api-key=test-youtube-api-key-1234567890",
     "dvaas.youtube.channel-id=UC1234567890123456789012"
