@@ -31,3 +31,4 @@ build/
 
 ### VS Code ###
 .vscode/
+/claude_desktop_config.json
