@@ -10,6 +10,7 @@ import org.springframework.test.context.TestPropertySource;
  */
 @SpringBootTest
 @TestPropertySource(properties = {
+    "spring.ai.anthropic.api-key=test-key",
     "dvaas.speaking.api-url=https://www.danvega.dev/api/speaking",
     "dvaas.speaking.cache-duration=PT5M",
     // Ensure other services are configured for complete integration
@@ -17,7 +18,10 @@ import org.springframework.test.context.TestPropertySource;
     "dvaas.blog.cache-duration=PT30M",
     "dvaas.youtube.api-key=test-youtube-api-key-1234567890",
     "dvaas.youtube.channel-id=UC1234567890123456789012",
-    "dvaas.youtube.application-name=test-app"
+    "dvaas.youtube.application-name=test-app",
+    "dvaas.newsletter.api-key=test-newsletter-api-key",
+    "dvaas.newsletter.publications.danvega=pub_test_123",
+    "dvaas.podcast.api-key=test-podcast-api-key-1234567890"
 })
 class SpeakingIntegrationTest {
 
