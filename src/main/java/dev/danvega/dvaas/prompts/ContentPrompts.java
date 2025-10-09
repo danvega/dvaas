@@ -48,83 +48,101 @@ public class ContentPrompts {
             ? contentTypes.trim()
             : "all";
 
-        // Build comprehensive instruction message
-        StringBuilder instruction = new StringBuilder();
-        instruction.append("Generate a comprehensive content report for the date range: ").append(dateRangeStr).append("\n\n");
+        // Build comprehensive instruction message using text blocks
+        String instruction = """
+            Generate a comprehensive content report for the date range: %s
 
-        instruction.append("## Instructions:\n\n");
+            ## Instructions:
 
-        instruction.append("### 1. Data Collection\n");
-        instruction.append("Gather content from the following sources based on the content types filter ('").append(typesFilter).append("'):\n\n");
+            ### 1. Data Collection
+            Gather content from the following sources based on the content types filter ('%s'):
 
+            """.formatted(dateRangeStr, typesFilter);
+
+        // Add content type-specific sections
         if (shouldIncludeType(typesFilter, "video", "live stream")) {
-            instruction.append("**YouTube Videos:**\n");
-            instruction.append("- Use tool: `youtube-get-latest-videos` with a high count (e.g., 50)\n");
-            instruction.append("- Then use tool: `youtube-search-videos-by-topic` to find additional videos if needed\n");
-            instruction.append("- Filter results to the date range: ").append(dateRangeStr).append("\n");
-            instruction.append("- Determine if each video is a 'video' or 'live stream' (if duration or title indicates live streaming)\n\n");
+            instruction += """
+                **YouTube Videos:**
+                - Use tool: `youtube-get-latest-videos` with a high count (e.g., 50)
+                - Then use tool: `youtube-search-videos-by-topic` to find additional videos if needed
+                - Filter results to the date range: %s
+                - Determine if each video is a 'video' or 'live stream' (if duration or title indicates live streaming)
+
+                """.formatted(dateRangeStr);
         }
 
         if (shouldIncludeType(typesFilter, "blog")) {
-            instruction.append("**Blog Posts:**\n");
-            instruction.append("- Use tool: `blog-get-posts-by-date-range` with dateRange parameter: '").append(dateRangeStr).append("'\n");
-            instruction.append("- Retrieve up to 50 posts\n\n");
+            instruction += """
+                **Blog Posts:**
+                - Use tool: `blog-get-posts-by-date-range` with dateRange parameter: '%s'
+                - Retrieve up to 50 posts
+
+                """.formatted(dateRangeStr);
         }
 
         if (shouldIncludeType(typesFilter, "newsletter")) {
-            instruction.append("**Newsletter Posts:**\n");
-            instruction.append("- Use tool: `newsletter-get-latest-posts` with publication='all' and count=50\n");
-            instruction.append("- Filter results to the date range: ").append(dateRangeStr).append("\n");
-            instruction.append("- Only include posts with status 'confirmed' (published)\n\n");
+            instruction += """
+                **Newsletter Posts:**
+                - Use tool: `newsletter-get-latest-posts` with publication='all' and count=50
+                - Filter results to the date range: %s
+                - Only include posts with status 'confirmed' (published)
+
+                """.formatted(dateRangeStr);
         }
 
         if (shouldIncludeType(typesFilter, "podcast")) {
-            instruction.append("**Podcast Episodes:**\n");
-            instruction.append("- Use tool: `podcast-get-latest-episodes` with count=50\n");
-            instruction.append("- Filter results to the date range: ").append(dateRangeStr).append("\n\n");
+            instruction += """
+                **Podcast Episodes:**
+                - Use tool: `podcast-get-latest-episodes` with count=50
+                - Filter results to the date range: %s
+
+                """.formatted(dateRangeStr);
         }
 
-        instruction.append("### 2. Data Formatting\n");
-        instruction.append("Format the output as CSV with the following columns:\n\n");
-        instruction.append("```\n");
-        instruction.append("NAME,CONTENT TYPE,EXPORT INDICATOR,DATE,CONTENT LINK,EYEBALLS LIVE,EYEBALLS POST\n");
-        instruction.append("```\n\n");
+        instruction += """
+            ### 2. Data Formatting
+            Format the output as CSV with the following columns:
 
-        instruction.append("**Column Specifications:**\n");
-        instruction.append("- **NAME**: Title of the content\n");
-        instruction.append("- **CONTENT TYPE**: One of: 'video', 'live stream', 'blog', 'newsletter', 'podcast'\n");
-        instruction.append("- **EXPORT INDICATOR**: Always use 'export for reporting'\n");
-        instruction.append("- **DATE**: Publication date in M/D/YYYY format (e.g., 11/5/2024)\n");
-        instruction.append("- **CONTENT LINK**: Full URL to the content\n");
-        instruction.append("- **EYEBALLS LIVE**: Always 0 (live viewer metrics not currently tracked)\n");
-        instruction.append("- **EYEBALLS POST**: \n");
-        instruction.append("  - For YouTube videos: Use the viewCount field\n");
-        instruction.append("  - For all other content types: Use 0 (metrics not available via current APIs)\n\n");
+            ```
+            NAME,CONTENT TYPE,EXPORT INDICATOR,DATE,CONTENT LINK,EYEBALLS LIVE,EYEBALLS POST
+            ```
 
-        instruction.append("### 3. Sorting and Output\n");
-        instruction.append("- Sort all content by date in chronological order (oldest to newest)\n");
-        instruction.append("- Output the CSV with proper escaping for commas and quotes in titles\n");
-        instruction.append("- Include the header row\n\n");
+            **Column Specifications:**
+            - **NAME**: Title of the content
+            - **CONTENT TYPE**: One of: 'video', 'live stream', 'blog', 'newsletter', 'podcast'
+            - **EXPORT INDICATOR**: Always use 'export for reporting'
+            - **DATE**: Publication date in M/D/YYYY format (e.g., 11/5/2024)
+            - **CONTENT LINK**: Full URL to the content
+            - **EYEBALLS LIVE**: Always 0 (live viewer metrics not currently tracked)
+            - **EYEBALLS POST**:
+              - For YouTube videos: Use the viewCount field
+              - For all other content types: Use 0 (metrics not available via current APIs)
 
-        instruction.append("### 4. Example Output Format\n");
-        instruction.append("```csv\n");
-        instruction.append("NAME,CONTENT TYPE,EXPORT INDICATOR,DATE,CONTENT LINK,EYEBALLS LIVE,EYEBALLS POST\n");
-        instruction.append("Spring Security 6.4 - Rest Client OAuth2 Support,video,export for reporting,11/5/2024,https://youtu.be/nFKcJDpUuZ8,0,4000\n");
-        instruction.append("Spring Data - Query by Example,video,export for reporting,11/8/2024,https://youtu.be/NGVWHdGNbiI,0,5000\n");
-        instruction.append("Spring Boot Tips and Tricks,blog,export for reporting,11/15/2024,https://www.danvega.dev/blog/spring-boot-tips,0,0\n");
-        instruction.append("Weekly Newsletter #45,newsletter,export for reporting,11/20/2024,https://www.danvega.dev/newsletter/45,0,0\n");
-        instruction.append("Spring Office Hours Episode 50,podcast,export for reporting,11/25/2024,https://www.springofficehours.io/episodes/50,0,0\n");
-        instruction.append("```\n\n");
+            ### 3. Sorting and Output
+            - Sort all content by date in chronological order (oldest to newest)
+            - Output the CSV with proper escaping for commas and quotes in titles
+            - Include the header row
 
-        instruction.append("### 5. Important Notes\n");
-        instruction.append("- If a tool returns an error, skip that content type and note it in a comment above the CSV\n");
-        instruction.append("- Handle pagination if needed to get all content in the date range\n");
-        instruction.append("- Ensure all dates are parsed correctly and fall within the specified range\n");
-        instruction.append("- Remove any duplicate entries (same content appearing multiple times)\n");
+            ### 4. Example Output Format
+            ```csv
+            NAME,CONTENT TYPE,EXPORT INDICATOR,DATE,CONTENT LINK,EYEBALLS LIVE,EYEBALLS POST
+            Spring Security 6.4 - Rest Client OAuth2 Support,video,export for reporting,11/5/2024,https://youtu.be/nFKcJDpUuZ8,0,4000
+            Spring Data - Query by Example,video,export for reporting,11/8/2024,https://youtu.be/NGVWHdGNbiI,0,5000
+            Spring Boot Tips and Tricks,blog,export for reporting,11/15/2024,https://www.danvega.dev/blog/spring-boot-tips,0,0
+            Weekly Newsletter #45,newsletter,export for reporting,11/20/2024,https://www.danvega.dev/newsletter/45,0,0
+            Spring Office Hours Episode 50,podcast,export for reporting,11/25/2024,https://www.springofficehours.io/episodes/50,0,0
+            ```
+
+            ### 5. Important Notes
+            - If a tool returns an error, skip that content type and note it in a comment above the CSV
+            - Handle pagination if needed to get all content in the date range
+            - Ensure all dates are parsed correctly and fall within the specified range
+            - Remove any duplicate entries (same content appearing multiple times)
+            """;
 
         return new GetPromptResult(
             "Content Report Generation Instructions for " + dateRangeStr,
-            List.of(new PromptMessage(Role.USER, new TextContent(instruction.toString())))
+            List.of(new PromptMessage(Role.USER, new TextContent(instruction)))
         );
     }
 
