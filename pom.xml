@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.5</version>
+		<version>4.0.1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>dev.danvega</groupId>
@@ -28,7 +28,7 @@
 	</scm>
 	<properties>
 		<java.version>24</java.version>
-		<spring-ai.version>1.1.0-M3</spring-ai.version>
+		<spring-ai.version>2.0.0-M2</spring-ai.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -61,7 +61,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.google.oauth-client</groupId>
-			<artifactId>google-oauth-client-jetty</artifactId>
+			<artifactId>google-oauth-client</artifactId>
 			<version>1.36.0</version>
 		</dependency>
 		<dependency>
@@ -94,6 +94,19 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+
+	<repositories>
+		<repository>
+			<id>spring-milestones</id>
+			<url>https://repo.spring.io/milestone</url>
+		</repository>
+	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>spring-milestones</id>
+			<url>https://repo.spring.io/milestone</url>
+		</pluginRepository>
+	</pluginRepositories>
 
 	<build>
 		<plugins>

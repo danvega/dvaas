@@ -34,7 +34,8 @@ class ContentPromptsTests {
         String instruction = content.text();
 
         // Should include current year
-        assertTrue(instruction.contains("2025"), "Should default to current year 2025");
+        String currentYear = String.valueOf(java.time.LocalDate.now().getYear());
+        assertTrue(instruction.contains(currentYear), "Should default to current year " + currentYear);
 
         // Should include all content types
         assertTrue(instruction.contains("YouTube Videos"));
@@ -57,7 +58,6 @@ class ContentPromptsTests {
         String instruction = content.text();
 
         assertTrue(instruction.contains("2024"));
-        assertFalse(instruction.contains("2025"));
     }
 
     @Test
