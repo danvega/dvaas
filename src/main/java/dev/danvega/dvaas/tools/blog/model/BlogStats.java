@@ -2,9 +2,6 @@ package dev.danvega.dvaas.tools.blog.model;
 
 import java.time.LocalDateTime;
 
-/**
- * Represents overall blog statistics for MCP tool responses
- */
 public record BlogStats(
         int totalPosts,
         LocalDateTime firstPostDate,
@@ -16,9 +13,6 @@ public record BlogStats(
         String mostCommonTag
 ) {
 
-    /**
-     * Get formatted timespan of the blog
-     */
     public String getBlogTimespan() {
         if (firstPostDate == null || latestPostDate == null) {
             return "Unknown timespan";
@@ -31,9 +25,6 @@ public record BlogStats(
         return String.format("%d years (%d - %d)", yearsDiff, firstPostDate.getYear(), latestPostDate.getYear());
     }
 
-    /**
-     * Get posting frequency description
-     */
     public String getPostingFrequency() {
         if (averagePostsPerMonth >= 4) {
             return "Very active (4+ posts/month)";
@@ -46,9 +37,6 @@ public record BlogStats(
         }
     }
 
-    /**
-     * Get YouTube integration percentage
-     */
     public String getYouTubeIntegrationPercentage() {
         if (totalPosts == 0) {
             return "0%";

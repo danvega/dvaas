@@ -21,9 +21,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Service for interacting with the YouTube Data API v3
- */
 @Service
 @ConditionalOnProperty(name = {"dvaas.youtube.api-key", "dvaas.youtube.channel-id"})
 public class YouTubeService {
@@ -45,9 +42,6 @@ public class YouTubeService {
         logger.info("YouTube service initialized for channel: {}", youTubeProperties.channelId());
     }
 
-    /**
-     * Get channel statistics
-     */
     public ChannelStats getChannelStats() {
         try {
             YouTube.Channels.List request = youtube.channels()
@@ -81,15 +75,9 @@ public class YouTubeService {
         }
     }
 
-    /**
-     * Get latest videos from the channel
-     */
     public List<Video> getLatestVideos(int maxResults) {
         try {
-            // First get the uploads playlist ID
             String uploadsPlaylistId = getUploadsPlaylistId();
-
-            // Get videos from uploads playlist
             YouTube.PlaylistItems.List request = youtube.playlistItems()
                     .list(List.of("snippet", "contentDetails"))
                     .setPlaylistId(uploadsPlaylistId)
@@ -105,15 +93,9 @@ public class YouTubeService {
         }
     }
 
-    /**
-     * Get top performing videos by view count
-     */
     public List<Video> getTopVideos(int maxResults, String timeRange) {
         try {
-            // Get recent videos first, then sort by view count
             List<Video> recentVideos = getLatestVideos(50); // Get more to have a good pool
-
-            // Get detailed statistics for sorting
             List<Video> videosWithStats = getVideoStatistics(recentVideos);
 
             return videosWithStats.stream()
@@ -126,9 +108,6 @@ public class YouTubeService {
         }
     }
 
-    /**
-     * Search videos in the channel by topic/keyword
-     */
     public List<Video> searchVideosByTopic(String topic, int maxResults) {
         try {
             YouTube.Search.List search = youtube.search()

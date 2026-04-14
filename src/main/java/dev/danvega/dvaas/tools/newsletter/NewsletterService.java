@@ -24,10 +24,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-/**
- * Service for interacting with the newsletter API (Beehiiv)
- * Supports multiple publications (e.g., danvega, bytesizedai)
- */
 @Service
 @ConditionalOnProperty(name = "dvaas.newsletter.api-key")
 public class NewsletterService {
@@ -49,9 +45,6 @@ public class NewsletterService {
         logger.info("Newsletter cache duration: {} minutes", newsletterProperties.getCacheDurationMinutes());
     }
 
-    /**
-     * Get latest posts from specific publication or all publications
-     */
     public List<Post> getLatestPosts(String publication, int maxResults) {
         if ("all".equalsIgnoreCase(publication)) {
             return getAllPostsFromAllPublications(maxResults);
@@ -75,9 +68,6 @@ public class NewsletterService {
                 .toList();
     }
 
-    /**
-     * Search posts by keyword
-     */
     public List<Post> searchPostsByKeyword(String publication, String keyword, int maxResults) {
         if (keyword == null || keyword.trim().isEmpty()) {
             return List.of();
@@ -100,9 +90,6 @@ public class NewsletterService {
                 .toList();
     }
 
-    /**
-     * Get posts by status (draft, confirmed, archived, all)
-     */
     public List<Post> getPostsByStatus(String publication, String status, int maxResults) {
         List<Post> allPosts = getPostsForPublication(publication);
 
@@ -134,9 +121,6 @@ public class NewsletterService {
                 .toList();
     }
 
-    /**
-     * Get publication statistics
-     */
     public PublicationStats getPublicationStats(String publication) {
         if (!"all".equalsIgnoreCase(publication) && !newsletterProperties.hasPublication(publication)) {
             throw new IllegalArgumentException("Unknown publication: " + publication + ". Available: " + newsletterProperties.getPublicationNames());
@@ -191,9 +175,6 @@ public class NewsletterService {
         );
     }
 
-    /**
-     * Get posts for a specific publication or all publications
-     */
     private List<Post> getPostsForPublication(String publication) {
         if ("all".equalsIgnoreCase(publication)) {
             return getAllPostsFromAllPublications(50);
@@ -206,9 +187,6 @@ public class NewsletterService {
         return getCachedPosts(publication);
     }
 
-    /**
-     * Get all posts from all publications
-     */
     private List<Post> getAllPostsFromAllPublications(int maxResults) {
         List<Post> allPosts = new ArrayList<>();
 
@@ -229,9 +207,6 @@ public class NewsletterService {
                 .toList();
     }
 
-    /**
-     * Get cached posts for a publication, refreshing if needed
-     */
     @SuppressWarnings("unchecked")
     private List<Post> getCachedPosts(String publication) {
         String cacheKey = "posts_" + publication;
@@ -253,9 +228,6 @@ public class NewsletterService {
         return (List<Post>) cache.getOrDefault(cacheKey, List.of());
     }
 
-    /**
-     * Check if cache needs refresh
-     */
     private boolean needsCacheRefresh(String cacheKey) {
         LocalDateTime lastCacheTime = cacheTimestamps.get(cacheKey);
         return lastCacheTime == null ||
@@ -263,9 +235,6 @@ public class NewsletterService {
                !cache.containsKey(cacheKey);
     }
 
-    /**
-     * Fetch posts from Beehiiv API
-     */
     private List<Post> fetchPostsFromApi(String publicationId, String publicationName) throws IOException, InterruptedException {
         String url = String.format("%s/publications/%s/posts?limit=50&order_by=publish_date&direction=desc",
                 newsletterProperties.baseUrl(), publicationId);
@@ -311,9 +280,6 @@ public class NewsletterService {
         return posts;
     }
 
-    /**
-     * Convert API response data to Post object
-     */
     @SuppressWarnings("unchecked")
     private Post convertApiDataToPost(Map<String, Object> data, String publicationId, String publicationName) {
         try {
@@ -394,9 +360,6 @@ public class NewsletterService {
         }
     }
 
-    /**
-     * Parse datetime string from API
-     */
     private LocalDateTime parseDateTime(String dateStr) {
         if (dateStr == null || dateStr.trim().isEmpty()) {
             return null;
@@ -436,9 +399,6 @@ public class NewsletterService {
         }
     }
 
-    /**
-     * Get long value from map, handling various numeric types
-     */
     private long getLongValue(Map<String, Object> map, String key) {
         Object value = map.get(key);
         if (value == null) return 0L;
@@ -452,9 +412,6 @@ public class NewsletterService {
         }
     }
 
-    /**
-     * Check if post matches keyword search
-     */
     private boolean matchesKeyword(Post post, String keyword) {
         String title = post.title() != null ? post.title().toLowerCase() : "";
         String contentPreview = post.contentPreview() != null ? post.contentPreview().toLowerCase() : "";
@@ -463,9 +420,6 @@ public class NewsletterService {
         return title.contains(keyword) || contentPreview.contains(keyword) || authors.contains(keyword);
     }
 
-    /**
-     * Safely extract string value from map, handling different data types
-     */
     private String getStringValue(Map<String, Object> map, String key) {
         Object value = map.get(key);
         if (value == null) {

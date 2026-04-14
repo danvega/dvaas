@@ -3,9 +3,6 @@ package dev.danvega.dvaas.tools.podcast.model;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * Represents overall podcast statistics for MCP tool responses
- */
 public record PodcastStats(
         int totalShows,
         int totalEpisodes,
@@ -17,32 +14,20 @@ public record PodcastStats(
         List<ShowSummary> showSummaries
 ) {
 
-    /**
-     * Summary information for a single show
-     */
     public record ShowSummary(
             String showTitle,
             int episodeCount,
             LocalDateTime latestEpisode
     ) {}
 
-    /**
-     * Check if there are any episodes
-     */
     public boolean hasEpisodes() {
         return totalEpisodes > 0;
     }
 
-    /**
-     * Get formatted average episodes per month
-     */
     public String getFormattedAverageEpisodesPerMonth() {
         return String.format("%.1f", averageEpisodesPerMonth);
     }
 
-    /**
-     * Get the most active show (by episode count)
-     */
     public String getMostActiveShow() {
         if (showSummaries == null || showSummaries.isEmpty()) {
             return "N/A";

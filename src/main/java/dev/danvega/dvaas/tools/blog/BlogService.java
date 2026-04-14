@@ -20,9 +20,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-/**
- * Service for parsing and managing blog RSS feed data
- */
 @Service
 @ConditionalOnProperty(name = "dvaas.blog.rss-url")
 public class BlogService {
@@ -39,16 +36,10 @@ public class BlogService {
         logger.info("Blog cache duration: {} minutes", blogProperties.getCacheDurationMinutes());
     }
 
-    /**
-     * Get all blog posts from the RSS feed
-     */
     public List<BlogPost> getAllPosts() {
         return getCachedPosts();
     }
 
-    /**
-     * Get latest blog posts
-     */
     public List<BlogPost> getLatestPosts(int maxResults) {
         List<BlogPost> allPosts = getCachedPosts();
         return allPosts.stream()
@@ -57,9 +48,6 @@ public class BlogService {
                 .toList();
     }
 
-    /**
-     * Search blog posts by keyword in title and description
-     */
     public List<BlogPost> searchPostsByKeyword(String keyword, int maxResults) {
         if (keyword == null || keyword.trim().isEmpty()) {
             return List.of();
@@ -75,9 +63,6 @@ public class BlogService {
                 .toList();
     }
 
-    /**
-     * Get blog posts within a specific date range
-     */
     public List<BlogPost> getPostsByDateRange(LocalDateTime startDate, LocalDateTime endDate, int maxResults) {
         List<BlogPost> allPosts = getCachedPosts();
 
@@ -88,9 +73,6 @@ public class BlogService {
                 .toList();
     }
 
-    /**
-     * Get blog posts from a specific year
-     */
     public List<BlogPost> getPostsByYear(int year, int maxResults) {
         LocalDateTime startOfYear = LocalDateTime.of(year, 1, 1, 0, 0);
         LocalDateTime endOfYear = LocalDateTime.of(year, 12, 31, 23, 59);
@@ -98,9 +80,6 @@ public class BlogService {
         return getPostsByDateRange(startOfYear, endOfYear, maxResults);
     }
 
-    /**
-     * Get overall blog statistics
-     */
     public BlogStats getBlogStats() {
         List<BlogPost> allPosts = getCachedPosts();
 
@@ -154,9 +133,6 @@ public class BlogService {
         );
     }
 
-    /**
-     * Get cached posts, refreshing cache if needed
-     */
     @SuppressWarnings("unchecked")
     private List<BlogPost> getCachedPosts() {
         if (needsCacheRefresh()) {
@@ -176,18 +152,12 @@ public class BlogService {
         return (List<BlogPost>) cache.getOrDefault("posts", List.of());
     }
 
-    /**
-     * Check if cache needs to be refreshed
-     */
     private boolean needsCacheRefresh() {
         return lastCacheTime == null ||
                ChronoUnit.MINUTES.between(lastCacheTime, LocalDateTime.now()) >= blogProperties.getCacheDurationMinutes() ||
                !cache.containsKey("posts");
     }
 
-    /**
-     * Fetch blog posts from RSS feed
-     */
     private List<BlogPost> fetchPostsFromRss() throws Exception {
         logger.info("Fetching RSS feed from: {}", blogProperties.rssUrl());
 
@@ -207,9 +177,6 @@ public class BlogService {
         return posts;
     }
 
-    /**
-     * Convert SyndEntry to BlogPost
-     */
     private BlogPost convertEntryToBlogPost(SyndEntry entry) {
         try {
             String title = entry.getTitle();
@@ -235,9 +202,6 @@ public class BlogService {
         }
     }
 
-    /**
-     * Check if post matches keyword search
-     */
     private boolean matchesKeyword(BlogPost post, String keyword) {
         String title = post.title() != null ? post.title().toLowerCase() : "";
         String description = post.description() != null ? post.description().toLowerCase() : "";
@@ -245,16 +209,10 @@ public class BlogService {
         return title.contains(keyword) || description.contains(keyword);
     }
 
-    /**
-     * Check if date is within range (inclusive)
-     */
     private boolean isWithinDateRange(LocalDateTime date, LocalDateTime start, LocalDateTime end) {
         return !date.isBefore(start) && !date.isAfter(end);
     }
 
-    /**
-     * Extract YouTube video URL from content
-     */
     private String extractYouTubeUrl(String content) {
         if (content == null) return null;
 
@@ -276,9 +234,6 @@ public class BlogService {
         return null;
     }
 
-    /**
-     * Extract potential tags from title and description
-     */
     private List<String> extractTagsFromContent(String title, String description) {
         String content = (title + " " + (description != null ? description : "")).toLowerCase();
 
@@ -295,9 +250,6 @@ public class BlogService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Find the most common tag across all posts
-     */
     private String findMostCommonTag(List<BlogPost> posts) {
         Map<String, Long> tagCounts = posts.stream()
                 .flatMap(post -> post.extractPotentialTags().stream())

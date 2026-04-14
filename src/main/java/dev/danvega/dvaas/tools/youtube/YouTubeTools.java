@@ -2,16 +2,13 @@ package dev.danvega.dvaas.tools.youtube;
 
 import dev.danvega.dvaas.tools.youtube.model.ChannelStats;
 import dev.danvega.dvaas.tools.youtube.model.Video;
-import org.springaicommunity.mcp.annotation.McpTool;
-import org.springaicommunity.mcp.annotation.McpToolParam;
+import org.springframework.ai.mcp.annotation.McpTool;
+import org.springframework.ai.mcp.annotation.McpToolParam;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-/**
- * MCP tools for YouTube channel operations
- */
 @Component
 @ConditionalOnBean(YouTubeService.class)
 public class YouTubeTools {
@@ -67,9 +64,6 @@ public class YouTubeTools {
         return youTubeService.getChannelStats();
     }
 
-    /**
-     * Parse count parameter with validation
-     */
     private int parseCount(String count, int defaultValue, int maxValue) {
         if (count == null || count.trim().isEmpty()) {
             return defaultValue;

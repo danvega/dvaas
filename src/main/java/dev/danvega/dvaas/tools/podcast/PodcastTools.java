@@ -3,16 +3,13 @@ package dev.danvega.dvaas.tools.podcast;
 import dev.danvega.dvaas.tools.podcast.model.Episode;
 import dev.danvega.dvaas.tools.podcast.model.PodcastStats;
 import dev.danvega.dvaas.tools.podcast.model.Show;
-import org.springaicommunity.mcp.annotation.McpTool;
-import org.springaicommunity.mcp.annotation.McpToolParam;
+import org.springframework.ai.mcp.annotation.McpTool;
+import org.springframework.ai.mcp.annotation.McpToolParam;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-/**
- * MCP tools for podcast operations via Transistor.fm
- */
 @Component
 @ConditionalOnBean(PodcastService.class)
 public class PodcastTools {
@@ -81,9 +78,6 @@ public class PodcastTools {
         return podcastService.getPodcastStats();
     }
 
-    /**
-     * Parse count parameter with validation
-     */
     private int parseCount(String count, int defaultValue, int maxValue) {
         if (count == null || count.trim().isEmpty()) {
             return defaultValue;

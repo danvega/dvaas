@@ -20,9 +20,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-/**
- * Service for interacting with the Transistor.fm API
- */
 @Service
 @ConditionalOnProperty(name = "dvaas.podcast.api-key")
 public class PodcastService {
@@ -45,16 +42,10 @@ public class PodcastService {
         logger.info("Podcast service initialized with cache duration: {} minutes", podcastProperties.getCacheDurationMinutes());
     }
 
-    /**
-     * Get all podcast shows
-     */
     public List<Show> getAllShows() {
         return getCachedShows();
     }
 
-    /**
-     * Get a specific show by ID
-     */
     public Show getShowById(String showId) {
         try {
             JsonNode response = restClient.get()
@@ -73,10 +64,6 @@ public class PodcastService {
         }
     }
 
-    /**
-     * Resolve show identifier (name or ID) to show ID
-     * Accepts friendly names like "Spring Office Hours" or direct IDs
-     */
     public String resolveShowIdentifier(String identifier) {
         if (identifier == null || identifier.trim().isEmpty()) {
             return null;
@@ -118,9 +105,6 @@ public class PodcastService {
         return identifier;
     }
 
-    /**
-     * Get latest episodes across all shows or filtered by show
-     */
     public List<Episode> getLatestEpisodes(int maxResults, String showIdentifier) {
         List<Episode> allEpisodes = getCachedEpisodes();
 
@@ -139,9 +123,6 @@ public class PodcastService {
                 .toList();
     }
 
-    /**
-     * Search episodes by keyword in title and description
-     */
     public List<Episode> searchEpisodes(String keyword, int maxResults, String showIdentifier) {
         if (keyword == null || keyword.trim().isEmpty()) {
             return List.of();
@@ -165,9 +146,6 @@ public class PodcastService {
                 .toList();
     }
 
-    /**
-     * Get a specific episode by ID
-     */
     public Episode getEpisodeById(String episodeId) {
         try {
             JsonNode response = restClient.get()
@@ -186,9 +164,6 @@ public class PodcastService {
         }
     }
 
-    /**
-     * Get overall podcast statistics
-     */
     public PodcastStats getPodcastStats() {
         List<Show> allShows = getCachedShows();
         List<Episode> allEpisodes = getCachedEpisodes();
@@ -259,9 +234,6 @@ public class PodcastService {
         );
     }
 
-    /**
-     * Get cached shows, refreshing cache if needed
-     */
     @SuppressWarnings("unchecked")
     private List<Show> getCachedShows() {
         if (needsCacheRefresh()) {
@@ -281,9 +253,6 @@ public class PodcastService {
         return (List<Episode>) cache.getOrDefault("episodes", List.of());
     }
 
-    /**
-     * Check if cache needs to be refreshed
-     */
     private boolean needsCacheRefresh() {
         return lastCacheTime == null ||
                ChronoUnit.MINUTES.between(lastCacheTime, LocalDateTime.now()) >= podcastProperties.getCacheDurationMinutes() ||
@@ -291,9 +260,6 @@ public class PodcastService {
                !cache.containsKey("episodes");
     }
 
-    /**
-     * Refresh the cache with fresh data from API
-     */
     private void refreshCache() {
         try {
             List<Show> shows = fetchShowsFromApi();
@@ -310,9 +276,6 @@ public class PodcastService {
         }
     }
 
-    /**
-     * Fetch all shows from Transistor API
-     */
     private List<Show> fetchShowsFromApi() {
         try {
             logger.info("Fetching shows from Transistor API");
@@ -340,9 +303,6 @@ public class PodcastService {
         }
     }
 
-    /**
-     * Fetch all episodes from Transistor API
-     */
     private List<Episode> fetchEpisodesFromApi() {
         try {
             logger.info("Fetching episodes from Transistor API");
@@ -395,9 +355,6 @@ public class PodcastService {
         }
     }
 
-    /**
-     * Parse a Show from JSON:API response
-     */
     private Show parseShowFromJson(JsonNode data) {
         try {
             JsonNode attributes = data.get("attributes");
@@ -423,9 +380,6 @@ public class PodcastService {
         }
     }
 
-    /**
-     * Parse an Episode from JSON:API response
-     */
     private Episode parseEpisodeFromJson(JsonNode data) {
         try {
             JsonNode attributes = data.get("attributes");
@@ -481,18 +435,12 @@ public class PodcastService {
         }
     }
 
-    /**
-     * Check if episode matches keyword search
-     */
     private boolean matchesKeyword(Episode episode, String keyword) {
         String title = episode.title() != null ? episode.title().toLowerCase() : "";
         String description = episode.description() != null ? episode.description().toLowerCase() : "";
         return title.contains(keyword) || description.contains(keyword);
     }
 
-    /**
-     * Parse ISO 8601 datetime string to LocalDateTime
-     */
     private LocalDateTime parseDateTime(String dateTimeString) {
         try {
             // Try parsing as ISO instant

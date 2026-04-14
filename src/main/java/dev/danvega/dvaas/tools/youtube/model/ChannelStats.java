@@ -2,9 +2,6 @@ package dev.danvega.dvaas.tools.youtube.model;
 
 import java.time.LocalDateTime;
 
-/**
- * Represents YouTube channel statistics for MCP tool responses
- */
 public record ChannelStats(
         String channelId,
         String title,
@@ -16,9 +13,6 @@ public record ChannelStats(
         boolean subscriberCountHidden
 ) {
 
-    /**
-     * Get formatted subscriber count for display
-     */
     public String getFormattedSubscriberCount() {
         if (subscriberCountHidden) {
             return "Hidden";
@@ -32,9 +26,6 @@ public record ChannelStats(
         return String.valueOf(subscriberCount);
     }
 
-    /**
-     * Get formatted total view count for display
-     */
     public String getFormattedTotalViewCount() {
         if (totalViewCount >= 1_000_000_000) {
             return String.format("%.1fB", totalViewCount / 1_000_000_000.0);
@@ -46,9 +37,6 @@ public record ChannelStats(
         return String.valueOf(totalViewCount);
     }
 
-    /**
-     * Calculate average views per video
-     */
     public long getAverageViewsPerVideo() {
         return videoCount > 0 ? totalViewCount / videoCount : 0;
     }

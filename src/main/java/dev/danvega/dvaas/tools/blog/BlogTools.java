@@ -2,8 +2,8 @@ package dev.danvega.dvaas.tools.blog;
 
 import dev.danvega.dvaas.tools.blog.model.BlogPost;
 import dev.danvega.dvaas.tools.blog.model.BlogStats;
-import org.springaicommunity.mcp.annotation.McpTool;
-import org.springaicommunity.mcp.annotation.McpToolParam;
+import org.springframework.ai.mcp.annotation.McpTool;
+import org.springframework.ai.mcp.annotation.McpToolParam;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
@@ -102,9 +102,6 @@ public class BlogTools {
         throw new IllegalArgumentException("Invalid date range format. Use '2024' or '2023-01-01 to 2023-12-31'.");
     }
 
-    /**
-     * Parse count parameter with validation
-     */
     private int parseCount(String count, int defaultValue, int maxValue) {
         if (count == null || count.trim().isEmpty()) {
             return defaultValue;

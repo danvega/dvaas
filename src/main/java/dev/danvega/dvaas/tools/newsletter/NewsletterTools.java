@@ -2,17 +2,13 @@ package dev.danvega.dvaas.tools.newsletter;
 
 import dev.danvega.dvaas.tools.newsletter.model.Post;
 import dev.danvega.dvaas.tools.newsletter.model.PublicationStats;
-import org.springaicommunity.mcp.annotation.McpTool;
-import org.springaicommunity.mcp.annotation.McpToolParam;
+import org.springframework.ai.mcp.annotation.McpTool;
+import org.springframework.ai.mcp.annotation.McpToolParam;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-/**
- * MCP tools for newsletter operations
- * Supports multiple publications (danvega, bytesizedai)
- */
 @Component
 @ConditionalOnBean(NewsletterService.class)
 public class NewsletterTools {
@@ -84,9 +80,6 @@ public class NewsletterTools {
         return newsletterService.getPublicationStats(pubFilter);
     }
 
-    /**
-     * Parse count parameter with validation
-     */
     private int parseCount(String count, int defaultValue, int maxValue) {
         if (count == null || count.trim().isEmpty()) {
             return defaultValue;
