@@ -3,9 +3,6 @@ package dev.danvega.dvaas.tools.speaking.model;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-/**
- * Represents a speaking engagement for MCP tool responses
- */
 public record SpeakingEngagement(
         String title,
         String url,
@@ -16,16 +13,10 @@ public record SpeakingEngagement(
         String description
 ) {
 
-    /**
-     * Create a basic SpeakingEngagement with essential information
-     */
     public static SpeakingEngagement basic(String title, String name, LocalDateTime startDate, String location) {
         return new SpeakingEngagement(title, null, name, startDate, null, location, null);
     }
 
-    /**
-     * Get the full event URL (ensure it's absolute)
-     */
     public String getFullUrl() {
         if (url != null && url.startsWith("http")) {
             return url;
@@ -33,9 +24,6 @@ public record SpeakingEngagement(
         return url != null ? url : "";
     }
 
-    /**
-     * Get a shortened description for display
-     */
     public String getShortDescription() {
         if (description == null || description.isEmpty()) {
             return "";
@@ -43,26 +31,17 @@ public record SpeakingEngagement(
         return description.length() > 300 ? description.substring(0, 300) + "..." : description;
     }
 
-    /**
-     * Check if this is an upcoming event
-     */
     public boolean isUpcoming() {
         LocalDateTime now = LocalDateTime.now();
         return startDate != null && startDate.isAfter(now);
     }
 
-    /**
-     * Check if this is a past event
-     */
     public boolean isPast() {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime eventEnd = endDate != null ? endDate : startDate;
         return eventEnd != null && eventEnd.isBefore(now);
     }
 
-    /**
-     * Check if this event is currently ongoing
-     */
     public boolean isOngoing() {
         LocalDateTime now = LocalDateTime.now();
         if (startDate == null) return false;
@@ -71,9 +50,6 @@ public record SpeakingEngagement(
         return !startDate.isAfter(now) && !eventEnd.isBefore(now);
     }
 
-    /**
-     * Get formatted date range for display
-     */
     public String getFormattedDateRange() {
         if (startDate == null) {
             return "Date TBD";
@@ -97,9 +73,6 @@ public record SpeakingEngagement(
         }
     }
 
-    /**
-     * Get event status (upcoming, ongoing, past)
-     */
     public String getEventStatus() {
         if (isUpcoming()) {
             return "Upcoming";
@@ -110,16 +83,10 @@ public record SpeakingEngagement(
         }
     }
 
-    /**
-     * Check if event has a valid URL
-     */
     public boolean hasUrl() {
         return url != null && !url.trim().isEmpty();
     }
 
-    /**
-     * Get event type based on patterns in the name
-     */
     public String getEventType() {
         if (name == null) {
             return "Speaking Event";
@@ -141,9 +108,6 @@ public record SpeakingEngagement(
         }
     }
 
-    /**
-     * Extract potential topics from title and description
-     */
     public String extractTopics() {
         String content = (title + " " + (description != null ? description : "")).toLowerCase();
 

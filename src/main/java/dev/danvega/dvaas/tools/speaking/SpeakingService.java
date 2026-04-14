@@ -24,9 +24,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-/**
- * Service for fetching and managing speaking engagement data
- */
 @Service
 @ConditionalOnProperty(name = "dvaas.speaking.api-url")
 public class SpeakingService {
@@ -47,16 +44,10 @@ public class SpeakingService {
         logger.info("Speaking cache duration: {} minutes", speakingProperties.getCacheDurationMinutes());
     }
 
-    /**
-     * Get all speaking engagements
-     */
     public List<SpeakingEngagement> getAllEngagements() {
         return getCachedEngagements();
     }
 
-    /**
-     * Get latest speaking engagements
-     */
     public List<SpeakingEngagement> getLatestEngagements(int maxResults) {
         List<SpeakingEngagement> allEngagements = getCachedEngagements();
         return allEngagements.stream()
@@ -69,23 +60,17 @@ public class SpeakingService {
                 .toList();
     }
 
-    /**
-     * Get upcoming speaking engagements
-     */
     public List<SpeakingEngagement> getUpcomingEngagements(int maxResults) {
         List<SpeakingEngagement> allEngagements = getCachedEngagements();
         LocalDateTime now = LocalDateTime.now();
 
         return allEngagements.stream()
-                .filter(engagement -> engagement.startDate() != null && engagement.startDate().isAfter(now))
+                .filter(engagement -> engagement.startDate() != null && (engagement.startDate().isAfter(now) || engagement.isOngoing()))
                 .sorted(Comparator.comparing(SpeakingEngagement::startDate))
                 .limit(Math.min(maxResults, 50))
                 .toList();
     }
 
-    /**
-     * Search speaking engagements by keyword in title or description
-     */
     public SpeakingSearchResult searchEngagementsByKeyword(String keyword, int maxResults) {
         if (keyword == null || keyword.trim().isEmpty()) {
             return SpeakingSearchResult.forKeyword(List.of(), keyword);
@@ -107,9 +92,6 @@ public class SpeakingService {
         return SpeakingSearchResult.forKeyword(matchingEngagements, keyword);
     }
 
-    /**
-     * Get speaking engagements within a specific date range
-     */
     public SpeakingSearchResult getEngagementsByDateRange(LocalDateTime startDate, LocalDateTime endDate, int maxResults) {
         List<SpeakingEngagement> allEngagements = getCachedEngagements();
 
@@ -129,9 +111,6 @@ public class SpeakingService {
         return SpeakingSearchResult.forDateRange(matchingEngagements, dateRangeDesc);
     }
 
-    /**
-     * Get speaking engagements from a specific year
-     */
     public SpeakingSearchResult getEngagementsByYear(int year, int maxResults) {
         LocalDateTime startOfYear = LocalDateTime.of(year, 1, 1, 0, 0);
         LocalDateTime endOfYear = LocalDateTime.of(year, 12, 31, 23, 59);
@@ -140,9 +119,6 @@ public class SpeakingService {
         return SpeakingSearchResult.forDateRange(result.engagements(), String.valueOf(year));
     }
 
-    /**
-     * Get overall speaking statistics
-     */
     public SpeakingStats getSpeakingStats() {
         List<SpeakingEngagement> allEngagements = getCachedEngagements();
 
@@ -154,7 +130,7 @@ public class SpeakingService {
 
         // Count upcoming and past events
         long upcomingCount = allEngagements.stream()
-                .filter(e -> e.startDate() != null && e.startDate().isAfter(now))
+                .filter(e -> e.startDate() != null && (e.startDate().isAfter(now) || e.isOngoing()))
                 .count();
 
         long pastCount = allEngagements.stream()
@@ -222,9 +198,6 @@ public class SpeakingService {
         );
     }
 
-    /**
-     * Get cached engagements, refreshing cache if needed
-     */
     @SuppressWarnings("unchecked")
     private List<SpeakingEngagement> getCachedEngagements() {
         if (needsCacheRefresh()) {
@@ -244,18 +217,12 @@ public class SpeakingService {
         return (List<SpeakingEngagement>) cache.getOrDefault("engagements", List.of());
     }
 
-    /**
-     * Check if cache needs to be refreshed
-     */
     private boolean needsCacheRefresh() {
         return lastCacheTime == null ||
                ChronoUnit.MINUTES.between(lastCacheTime, LocalDateTime.now()) >= speakingProperties.getCacheDurationMinutes() ||
                !cache.containsKey("engagements");
     }
 
-    /**
-     * Fetch speaking engagements from API
-     */
     private List<SpeakingEngagement> fetchEngagementsFromApi() throws IOException, InterruptedException {
         logger.info("Fetching speaking data from: {}", speakingProperties.apiUrl());
 
@@ -290,9 +257,6 @@ public class SpeakingService {
         return engagements;
     }
 
-    /**
-     * Convert API data map to SpeakingEngagement
-     */
     private SpeakingEngagement convertApiDataToEngagement(Map<String, Object> data) {
         try {
             String title = (String) data.get("title");
@@ -311,9 +275,6 @@ public class SpeakingService {
         }
     }
 
-    /**
-     * Parse date time string from API
-     */
     private LocalDateTime parseDateTime(String dateStr) {
         if (dateStr == null || dateStr.trim().isEmpty()) {
             return null;
@@ -350,9 +311,6 @@ public class SpeakingService {
         }
     }
 
-    /**
-     * Check if engagement matches keyword search
-     */
     private boolean matchesKeyword(SpeakingEngagement engagement, String keyword) {
         String title = engagement.title() != null ? engagement.title().toLowerCase() : "";
         String description = engagement.description() != null ? engagement.description().toLowerCase() : "";
@@ -363,9 +321,6 @@ public class SpeakingService {
                name.contains(keyword) || location.contains(keyword);
     }
 
-    /**
-     * Check if date is within range (inclusive)
-     */
     private boolean isWithinDateRange(LocalDateTime date, LocalDateTime start, LocalDateTime end) {
         if (date == null) return false;
         return !date.isBefore(start) && !date.isAfter(end);

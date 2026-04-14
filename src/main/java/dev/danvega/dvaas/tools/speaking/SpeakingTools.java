@@ -3,16 +3,13 @@ package dev.danvega.dvaas.tools.speaking;
 import dev.danvega.dvaas.tools.speaking.model.SpeakingEngagement;
 import dev.danvega.dvaas.tools.speaking.model.SpeakingSearchResult;
 import dev.danvega.dvaas.tools.speaking.model.SpeakingStats;
-import org.springaicommunity.mcp.annotation.McpTool;
-import org.springaicommunity.mcp.annotation.McpToolParam;
+import org.springframework.ai.mcp.annotation.McpTool;
+import org.springframework.ai.mcp.annotation.McpToolParam;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-/**
- * MCP tools for speaking engagement operations
- */
 @Component
 @ConditionalOnBean(SpeakingService.class)
 public class SpeakingTools {
@@ -34,7 +31,7 @@ public class SpeakingTools {
     }
 
     @McpTool(name = "speaking-get-upcoming-events",
-             description = "Get upcoming speaking events from Dan Vega's speaking schedule")
+             description = "Get current and upcoming speaking events from Dan Vega's speaking schedule")
     public List<SpeakingEngagement> getUpcomingEvents(
             @McpToolParam(description = "Number of events to retrieve (default: 10, max: 50)",
                          required = false) String count) {
@@ -66,10 +63,6 @@ public class SpeakingTools {
         return speakingService.getSpeakingStats();
     }
 
-
-    /**
-     * Parse count parameter with validation
-     */
     private int parseCount(String count, int defaultValue, int maxValue) {
         if (count == null || count.trim().isEmpty()) {
             return defaultValue;
