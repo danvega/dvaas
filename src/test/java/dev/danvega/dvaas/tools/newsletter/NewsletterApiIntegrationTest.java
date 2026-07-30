@@ -6,6 +6,7 @@ import dev.danvega.dvaas.tools.newsletter.model.PublicationStats;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.Duration;
 import java.util.List;
@@ -46,7 +47,7 @@ class BeehiivApiIntegrationTest {
         );
 
         // Create service with real properties
-        newsletterService = new NewsletterService(newsletterProperties);
+        newsletterService = new NewsletterService(newsletterProperties, JsonMapper.builder().build());
     }
 
     @Test

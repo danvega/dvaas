@@ -1,6 +1,6 @@
 package dev.danvega.dvaas.tools.podcast;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import dev.danvega.dvaas.config.PodcastProperties;
 import dev.danvega.dvaas.tools.podcast.model.Episode;
 import dev.danvega.dvaas.tools.podcast.model.PodcastStats;

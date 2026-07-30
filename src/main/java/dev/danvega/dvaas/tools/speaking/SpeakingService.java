@@ -1,7 +1,7 @@
 package dev.danvega.dvaas.tools.speaking;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 import dev.danvega.dvaas.config.SpeakingProperties;
 import dev.danvega.dvaas.tools.speaking.model.SpeakingEngagement;
 import dev.danvega.dvaas.tools.speaking.model.SpeakingSearchResult;
@@ -32,14 +32,14 @@ public class SpeakingService {
 
     private final SpeakingProperties speakingProperties;
     private final HttpClient httpClient;
-    private final ObjectMapper objectMapper;
+    private final JsonMapper jsonMapper;
     private final Map<String, Object> cache = new ConcurrentHashMap<>();
     private LocalDateTime lastCacheTime;
 
-    public SpeakingService(SpeakingProperties speakingProperties) {
+    public SpeakingService(SpeakingProperties speakingProperties, JsonMapper jsonMapper) {
         this.speakingProperties = speakingProperties;
         this.httpClient = HttpClient.newHttpClient();
-        this.objectMapper = new ObjectMapper();
+        this.jsonMapper = jsonMapper;
         logger.info("Speaking service initialized with API URL: {}", speakingProperties.apiUrl());
         logger.info("Speaking cache duration: {} minutes", speakingProperties.getCacheDurationMinutes());
     }
@@ -239,7 +239,7 @@ public class SpeakingService {
         }
 
         // Parse JSON response
-        List<Map<String, Object>> apiData = objectMapper.readValue(
+        List<Map<String, Object>> apiData = jsonMapper.readValue(
             response.body(),
             new TypeReference<List<Map<String, Object>>>() {}
         );

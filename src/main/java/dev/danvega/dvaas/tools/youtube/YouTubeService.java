@@ -19,7 +19,9 @@ import java.security.GeneralSecurityException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @ConditionalOnProperty(name = {"dvaas.youtube.api-key", "dvaas.youtube.channel-id"})
@@ -27,6 +29,8 @@ public class YouTubeService {
 
     private static final Logger logger = LoggerFactory.getLogger(YouTubeService.class);
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
+    private static final int MAX_UPLOADS_POOL = 1000;
+    private static final int STATS_BATCH_SIZE = 50;
 
     private final YouTube youtube;
     private final YouTubeProperties youTubeProperties;
@@ -77,16 +81,8 @@ public class YouTubeService {
 
     public List<Video> getLatestVideos(int maxResults) {
         try {
-            String uploadsPlaylistId = getUploadsPlaylistId();
-            YouTube.PlaylistItems.List request = youtube.playlistItems()
-                    .list(List.of("snippet", "contentDetails"))
-                    .setPlaylistId(uploadsPlaylistId)
-                    .setMaxResults((long) Math.min(maxResults, 50))
-                    .setKey(youTubeProperties.apiKey());
-
-            PlaylistItemListResponse response = request.execute();
-
-            return convertPlaylistItemsToVideoInfo(response.getItems());
+            List<Video> videos = fetchUploads(null, Math.min(maxResults, 50));
+            return getVideoStatistics(videos);
         } catch (IOException e) {
             logger.error("Error fetching latest videos", e);
             throw new RuntimeException("Failed to fetch latest videos", e);
@@ -95,10 +91,14 @@ public class YouTubeService {
 
     public List<Video> getTopVideos(int maxResults, String timeRange) {
         try {
-            List<Video> recentVideos = getLatestVideos(50); // Get more to have a good pool
-            List<Video> videosWithStats = getVideoStatistics(recentVideos);
+            List<Video> pool = switch (timeRange != null ? timeRange : "recent") {
+                case "month" -> fetchUploads(LocalDateTime.now().minusDays(30), MAX_UPLOADS_POOL);
+                case "year" -> fetchUploads(LocalDateTime.now().minusDays(365), MAX_UPLOADS_POOL);
+                case "all" -> fetchUploads(null, MAX_UPLOADS_POOL);
+                default -> fetchUploads(null, 50);
+            };
 
-            return videosWithStats.stream()
+            return getVideoStatistics(pool).stream()
                     .sorted((v1, v2) -> Long.compare(v2.viewCount(), v1.viewCount()))
                     .limit(maxResults)
                     .toList();
@@ -106,6 +106,40 @@ public class YouTubeService {
             logger.error("Error fetching top videos", e);
             throw new RuntimeException("Failed to fetch top videos", e);
         }
+    }
+
+    // The uploads playlist is ordered newest-first, so pagination can stop
+    // as soon as an item falls before the cutoff date.
+    private List<Video> fetchUploads(LocalDateTime publishedAfter, int maxVideos) throws IOException {
+        String uploadsPlaylistId = getUploadsPlaylistId();
+        List<Video> videos = new ArrayList<>();
+        String pageToken = null;
+
+        do {
+            YouTube.PlaylistItems.List request = youtube.playlistItems()
+                    .list(List.of("snippet", "contentDetails"))
+                    .setPlaylistId(uploadsPlaylistId)
+                    .setMaxResults(50L)
+                    .setKey(youTubeProperties.apiKey());
+            if (pageToken != null) {
+                request.setPageToken(pageToken);
+            }
+
+            PlaylistItemListResponse response = request.execute();
+            for (PlaylistItem item : response.getItems() != null ? response.getItems() : List.<PlaylistItem>of()) {
+                Video video = convertPlaylistItemToVideoInfo(item);
+                if (publishedAfter != null && video.publishedAt().isBefore(publishedAfter)) {
+                    return videos;
+                }
+                videos.add(video);
+                if (videos.size() >= maxVideos) {
+                    return videos;
+                }
+            }
+            pageToken = response.getNextPageToken();
+        } while (pageToken != null);
+
+        return videos;
     }
 
     public List<Video> searchVideosByTopic(String topic, int maxResults) {
@@ -141,14 +175,6 @@ public class YouTubeService {
         }
 
         return response.getItems().get(0).getContentDetails().getRelatedPlaylists().getUploads();
-    }
-
-    private List<Video> convertPlaylistItemsToVideoInfo(List<PlaylistItem> items) {
-        if (items == null) return new ArrayList<>();
-
-        return items.stream()
-                .map(this::convertPlaylistItemToVideoInfo)
-                .toList();
     }
 
     private Video convertPlaylistItemToVideoInfo(PlaylistItem item) {
@@ -190,19 +216,25 @@ public class YouTubeService {
 
         List<String> videoIds = videos.stream().map(Video::id).toList();
 
-        YouTube.Videos.List request = youtube.videos()
-                .list(List.of("statistics", "contentDetails"))
-                .setId(videoIds)
-                .setKey(youTubeProperties.apiKey());
+        // The videos.list endpoint accepts at most 50 ids per request
+        Map<String, com.google.api.services.youtube.model.Video> statsById = new HashMap<>();
+        for (int i = 0; i < videoIds.size(); i += STATS_BATCH_SIZE) {
+            List<String> batch = videoIds.subList(i, Math.min(i + STATS_BATCH_SIZE, videoIds.size()));
 
-        VideoListResponse response = request.execute();
+            YouTube.Videos.List request = youtube.videos()
+                    .list(List.of("statistics", "contentDetails"))
+                    .setId(batch)
+                    .setKey(youTubeProperties.apiKey());
+
+            VideoListResponse response = request.execute();
+            if (response.getItems() != null) {
+                response.getItems().forEach(v -> statsById.put(v.getId(), v));
+            }
+        }
 
         return videos.stream()
                 .map(video -> {
-                    com.google.api.services.youtube.model.Video youtubeVideo = response.getItems().stream()
-                            .filter(v -> v.getId().equals(video.id()))
-                            .findFirst()
-                            .orElse(null);
+                    com.google.api.services.youtube.model.Video youtubeVideo = statsById.get(video.id());
 
                     if (youtubeVideo != null && youtubeVideo.getStatistics() != null) {
                         VideoStatistics stats = youtubeVideo.getStatistics();

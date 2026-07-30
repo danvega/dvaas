@@ -1,7 +1,7 @@
 package dev.danvega.dvaas.tools.newsletter;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 import dev.danvega.dvaas.config.NewsletterProperties;
 import dev.danvega.dvaas.tools.newsletter.model.Post;
 import dev.danvega.dvaas.tools.newsletter.model.PostStats;
@@ -32,14 +32,14 @@ public class NewsletterService {
 
     private final NewsletterProperties newsletterProperties;
     private final HttpClient httpClient;
-    private final ObjectMapper objectMapper;
+    private final JsonMapper jsonMapper;
     private final Map<String, Object> cache = new ConcurrentHashMap<>();
     private final Map<String, LocalDateTime> cacheTimestamps = new ConcurrentHashMap<>();
 
-    public NewsletterService(NewsletterProperties newsletterProperties) {
+    public NewsletterService(NewsletterProperties newsletterProperties, JsonMapper jsonMapper) {
         this.newsletterProperties = newsletterProperties;
         this.httpClient = HttpClient.newHttpClient();
-        this.objectMapper = new ObjectMapper();
+        this.jsonMapper = jsonMapper;
         logger.info("Newsletter service initialized with base URL: {}", newsletterProperties.baseUrl());
         logger.info("Newsletter publications: {}", newsletterProperties.getPublicationNames());
         logger.info("Newsletter cache duration: {} minutes", newsletterProperties.getCacheDurationMinutes());
@@ -255,7 +255,7 @@ public class NewsletterService {
         }
 
         // Parse JSON response
-        Map<String, Object> apiResponse = objectMapper.readValue(
+        Map<String, Object> apiResponse = jsonMapper.readValue(
             response.body(),
             new TypeReference<Map<String, Object>>() {}
         );
